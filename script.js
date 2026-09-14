@@ -73,8 +73,7 @@ if(fileInput) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 selectedImageBase64 = event.target.result;
-                previewBox.innerHTML = `<img src="{selectedImageBase64}" alt="Preview"`;             
-                previewBox.innerHTML = `<img src="{selectedImageBase64}" alt="Preview">`;             
+                previewBox.innerHTML = `<img src="${selectedImageBase64}" alt="User selected photo showing a personal moment in a calm indoor setting, with natural light and a warm, relaxed atmosphere">`;
             };
             reader.readAsDataURL(file);
         }
@@ -172,7 +171,7 @@ db.collection("moments_demo").orderBy("createdAt", "desc")
           const data = doc.data();
           const item = document.createElement('div');
           item.className = 'moment-item';
-          item.innerHTML = `<img src="${data.imageUrl}" alt="Khoảnh khắc">`;
+          item.innerHTML = `<img src="${data.imageUrl}" alt="Shared community memory showing a warm social moment or scene in a cozy, everyday environment">`;
           momentsList.appendChild(item);
       });
   });
