@@ -73,7 +73,7 @@ if(fileInput) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 selectedImageBase64 = event.target.result;
-                previewBox.innerHTML = `<img src="${selectedImageBase64}" alt="User selected photo showing a personal moment in a calm indoor setting, with natural light and a warm, relaxed atmosphere">`;
+                previewBox.innerHTML = `<img src="${selectedImageBase64}" alt="A person in a warm indoor room with soft natural light and a calm, relaxed mood. The person is looking at a phone or camera and the setting feels cozy and comfortable. No text is visible.">`;
             };
             reader.readAsDataURL(file);
         }
@@ -89,13 +89,13 @@ if(btnSubmitPost) {
         }
         //3.5.1 Khung chứa ảnh (nếu người dùng có chọn ảnh)
         const imageHTML = selectedImageBase64
-        ? '<div class="post-img-box" style="margin-top:10px;"><img src="${selectedImageBase64}" style="width:100%; border-radius:12px;"></div>'
+        ? '<div class="post-img-box" style="margin-top:10px;"><img src="${selectedImageBase64}" alt="A personal photo shared in a warm indoor setting with soft natural light and a calm, relaxed mood. No text is visible." style="width:100%; border-radius:12px;"></div>'
         : '';
         //3.5.2 Đúc thẻ bài đăng mới
         const newPostCard = document.createElement('div');
         newPostCard.className = 'post-card';
         newPostCard.innerHTML = `
-            <div class="post-user"
+            <div class="post-user">
                 <div class="user-avatar">🙍‍♂️</div>
                 <div class="user-meta">
                     <span class="user-name">Ouji</span>
@@ -171,7 +171,7 @@ db.collection("moments_demo").orderBy("createdAt", "desc")
           const data = doc.data();
           const item = document.createElement('div');
           item.className = 'moment-item';
-          item.innerHTML = `<img src="${data.imageUrl}" alt="Shared community memory showing a warm social moment or scene in a cozy, everyday environment">`;
+          item.innerHTML = `<img src="${data.imageUrl}" alt="A shared community memory with a warm, everyday social atmosphere. The image shows a cozy indoor scene with natural light and a gentle mood. No text is visible.">`;
           momentsList.appendChild(item);
       });
   });
@@ -195,6 +195,7 @@ if(momentFileInput) {
             alert('Đã thêm 1 tấm ảnh vào Khoảnh khắc chung! ✨');
         }
     });
+    imageHTML = `<img src="${imageUrl}" alt="A photo shared by the community in a cozy indoor setting with soft natural light and a gentle, welcoming mood. No text is visible." style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
 }
 
 //7. Gửi bài đăng lên cloud
@@ -204,6 +205,7 @@ async function submitPostToFirebase(content, file) {
        const storageRef = storage.ref(`images/${Date.now()}_${file.name}`);
        await storageRef.put(file);
        imageUrl = await storageRef.getDownloadURL();
+       imageHTML = `<img src="${imageUrl}" alt="A photo shared by the community in a cozy indoor setting with soft natural light and a gentle, welcoming mood. No text is visible." style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
     }
     await db.collection("posts_demo").add({
         author: "Ouji",
