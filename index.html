@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIKARI-Space</title>
+
+    <!--1. Kết nối Font chữ Be Vietnam Pro từ Google Fonts-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!--2. Kết nối tệp CSS-->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>HIKARI</h1>
+    <div class="subtitle">Khoảng cách địa lý không làm mờ đi ánh sáng</div>
+  </header>
+
+  <main class="main-container">
+
+    <!--1.KHỐI ĐỒNG HỒ KÉP (VN &JP)-->
+    <section class="clock-container">
+     <!-- Đồng hồ Việt Nam -->
+     <div class="clock-card vn-card">
+      <div class="location-title">Việt Nam (ICT) &#x1f1f3;</div>
+      <div class="time-display" id="vn-time">--:--:--</div>
+     </div>
+
+     <!-- Đồng hồ Nhật Bản -->
+     <div class="clock-card jp-card">
+      <div class="location-title">Nhật Bản (JST) &#127477;</div>
+      <div class="time-display" id="jp-time">--:--:--</div>
+     </div>
+   </section>
+
+    <!--2.THẺ THANH TIẾN ĐỘ-->
+    <section class="progress-card">
+      <div class="progress-header">
+        <span>🌸Hành trình 3 năm của Hime</span>
+        <span id="progress-text">0.00%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </section>
+
+    <section class="moments-section">
+      <div class="section-header">
+        <span class="section-title">Dòng nhật ký chung</span>
+        <a href="javascript:void(0)" class="see-all">Xem tất cả ></a>
+      </div>
+      <div class="moments-scroll-container" id="moments-list">
+        <div class="moment-add-card" onclick="document.getElementById('moment-file-input').click()">
+          <div class="plus-icon">+</div>
+          <span>Thêm ảnh</span>
+          <input type="file" id="moment-file-input" accept="image/*" style="display: none;">
+        </div>
+      </div>
+    </section>
+
+    <section class="posts-section">
+      <div class="tab-bar">
+        <button class="tab-btn active">Tất cả</button>
+        <button class="tab-btn">Bài viết</button>
+        <button class="tab-btn">Thông báo</button>
+      </div>
+
+      <div class="feed-container" id="feed-posts"></div>
+      
+      <div class="post-card">
+        <div class="post-user">
+          <div class="user-avatar">🙍‍♂️</div>
+          <div class="user-meta">
+            <span class="user-name">Ouji</span>
+            <span class="post-time">2 giờ trước</span>
+          </div>
+        </div>
+        <div class="post-body">
+          <p class="post-text">Vui quá, được Hime nhắn tin nhờ hỗ trợ!</p>
+          <div class="post-img-box">
+            <span>Ảnh minh họa🖼️</span>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button class="btn-like">❤️<span class="like-count">5</span></button>
+          <button class="btn-comment">💬<span class="comment-count">3</span></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button type="button" class="nav-item active" data-target="home-section">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Trang chủ</span>
+    </button>
+    <button type="button" class="nav-item" id="btn-open-post" onclick="openPostModal()">
+      <span class="nav-icon">📷</span>
+      <span class="nav-label">Khoảnh khắc</span>
+    </button>
+    <button type="button" class="nav-item" data-target="about-section">
+      <span class="nav-icon">🤝</span>
+      <span class="nav-label">Chúng mình</span>
+    </button>
+  </nav>
+
+  <div class="modal-overlay" id="post-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>🌸 Tạo khoảnh khắc mới</span>
+        <button id="btn-close-modal">❌</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="post-input-text" placeholder="Chia sẻ gì với nhà chút đi nhé..."></textarea>
+        <div class="file-upload-wrapper">
+          <label for="post-input-file" class="file-label">📷 Chọn ảnh từ máy</label>
+          <input type="file" id="post-input-file" accept="image/*" style="display: none;">
+        </div>
+        <div id="image-preview" class="image-preview-box"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-submit-post" class="btn-primary">Đăng bài</button>
+      </div>
+    </div>
+  </div>
+
+  <!--3. Kết nối thư viện Firebase SDK-->
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+
+  <!--4. Kết nối tệp JavaScript-->
+  <script src="script.js"></script>
+</body>
+</html>
