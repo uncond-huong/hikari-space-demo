@@ -111,13 +111,6 @@ if(btnSubmitPost) {
                 <button style="border:none; background: #E8F3E6; padding: 4px 10px; border-radius:8px; font-size: 0.8rem;">💬 0</button>
             </div>
         `;
-
-// Check for typos in the endpoint or missing base URLs
-fetch('/api/v1/users')
-  .then(res => {
-    if (res.status === 404) console.error('Check your API endpoint path');
-  });
-
         //3.5.3 Đẩy bài viết mới lên ĐẦU danh sách Bảng tin
         const firstPost = feedContainer.querySelector('.post-card');
         if (firstPost) {
