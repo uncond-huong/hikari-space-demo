@@ -22,15 +22,138 @@ body {
 }
 
 /* 3. Trang trí phần Header */
-header {
-  text-align: center;
-  margin-bottom: 30px;
+/* ==================== 1. STYLES TOP HEADER ==================== */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px 18px 4px;
+    margin-bottom: 10px;
 }
 
-h1{
-  font-size: 2.2rem;
-  margin: 0;
-  letter-spacing: 2px;
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.greeting-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.greeting-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #2D2D2D;
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, cursive, sans-serif; /* Font mềm nghệ thuật */
+}
+
+.greeting-title span {
+    font-style: italic;
+    color: #D86B85;
+}
+
+.greeting-subtitle {
+    font-size: 0.75rem;
+    color: #8C8C8C;
+    margin: 2px 0 0 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Nút chuông thông báo */
+.notif-btn {
+    position: relative;
+    background: #FFFFFF;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    width: 7px;
+    height: 7px;
+    background: #FF5A79;
+    border-radius: 50%;
+    border: 1.5px solid #FFFFFF;
+}
+
+/* Avatar & Chấm Online */
+.user-avatar-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    background: #FEEBF0;
+}
+
+.online-status {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 10px;
+    height: 10px;
+    background: #2ECC71; /* Màu xanh lá online */
+    border-radius: 50%;
+    border: 2px solid #FFFFFF;
+}
+
+/* ==================== 2. STYLES NÚT BẤM NỔI (FAB +) ==================== */
+.fab-add-btn {
+    position: fixed;
+    bottom: 82px; /* Nằm ngay trên thanh Menu Footer */
+    right: 20px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF9EAA 0%, #E85D75 100%);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(232, 93, 117, 0.4);
+    cursor: pointer;
+    z-index: 99;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab-add-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 4px 10px rgba(232, 93, 117, 0.3);
 }
 
 .main-container {
@@ -52,39 +175,163 @@ h1{
 .clock-container {
   width: 100%;
   max-width: 380px; /* Giới hạn chiều rộng tối đa */
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   flex-direction: row;
-  gap: 12px; /* Khoảng cách giữa các đồng hồ */
+  gap: 14px; /* Khoảng cách giữa các đồng hồ */
   box-sizing: border-box;
+  margin-bottom: 24px;
+
 }
 .clock-card {
-  flex: 1;
-  border-radius: 20px; /* Bo tròn các góc */
-  padding: 16px 10px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Bóng đổ nhẹ */
-  box-sizing: border-box;
+  position: relative;
+  border-radius: 28px; /* Bo tròn các góc */
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); /* Bóng đổ nhẹ */
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 /* 5. Phối màu riêng cho từng cái đồng hồ */
 .vn-card {
-  background-color: var(--green-card); /* Xanh nhạt (Việt Nam) */
+  background-color: linear-gradient(180deg, #F4FAF2 0%, #E7F3E5 100%); /* Xanh nhạt (Việt Nam) */
 }
 .jp-card {
-  background-color: var(--pink-card); /* Hồng nhạt (Nhật Bản) */
+  background-color: linear-gradient(180deg, #FFF5F7 0%, #FDE7EC 100%); /* Hồng nhạt (Nhật Bản) */
 }
 
-.location-title {
+.floral-bg {
+  position: absolute;
+  font-size: 4rem;
+  opacity: 0.15;
+  pointer-events: none;
+}
+.floral-sen { top: -10px; left: -10px; }
+.floral-sakura { top: -10px; left: -10px; }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.header-icon { font-size: 1.2rem; }
+.country-name {
   font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-weight: 700;
+  color: #333333;
+  line-height: 1.1;
+}
+.flower-name {
+  font-size: 0.7rem;
+  color: #888888;
 }
 
-.time-display {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+/* Mặt đồng hồ tròn */
+.clock-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.04), 0 6px 15px rgba(0, 0, 0, 0.04);
+  border: 3px solid #FFFFFF;
+  margin-bottom: 10px;
 }
+
+/* Hoa văn mờ giữa mặt đồng hồ */
+.clock-pattern {
+  position: absolute;
+  top: 55%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* Vạch kẻ chia 12h */
+.clock-tick-mark {
+  position: absolute;
+  width: 1.5px;
+  height: 5px;
+  background: #D0D0D0;
+  top: 4px;
+  left: calc(50% - 0.75px);
+  transform-origin: 0.75px 51px;
+}
+
+/* Nút chốt màu ở tâm */
+.clock-center-dot {
+  width: 6px;
+  height: 6px;
+  background: #333333;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+/* Khu vực kim đồng hồ */
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 4px;
+  z-index: 5;
+}
+
+.hour-hand {
+  width: 3.5px;
+  height: 30px;
+  background: #333333;
+  margin-left: -1.75px;
+}
+.minute-hand {
+  width: 2.5px;
+  height: 40px;
+  background: #555555;
+  margin-left: -1.25px;
+}
+.second-hand {
+  width: 1.5px;
+  height: 44px;
+  margin-left: -0.75px;
+}
+.vn-second-color { background: #4E8B5C; }
+.jp-second-color { background: #E06D85; }
+
+/* Giờ điện tử, ngày tháng & Badge UTC */
+.digital-time {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.5px;
+}
+.vn-text-color { color: #4E8B5C; }
+.jp-text-color { color: #E06D85; }
+
+.date-text {
+  font-size: 0.72rem;
+  color: #7A8B7B;
+  margin: 3px 0 8px 0;
+  font-weight: 500;
+}
+
+/* Thẻ UTC Pill */
+.utc-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+.vn-badge { background: #DCEBDC; color: #4E8B5C; }
+.jp-badge { background: #FCE3E8; color: #E06D85; }
 
 /*-- THIẾT KẾ THANH TIẾN ĐỘ --*/
 .progress-card {

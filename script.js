@@ -1,16 +1,97 @@
-//1. JavaScript code to update the clock every second
+// 1. Hàm tự động vẽ 12 vạch chia giờ tròn xịn xò
+function buildClockTicks(clockFaceId) {
+    const clockFace = document.getElementById(clockFaceId);
+    if (!clockFace) return;
+    
+    for (let i = 0; i < 12; i++) {
+        const tick = document.createElement('div');
+        tick.className = 'clock-tick-mark';
+        tick.style.transform = `rotate(${i * 30}deg)`;
+        clockFace.appendChild(tick);
+    }
+}
 
-function updateClock() {
+// 2. Hàm lấy dữ liệu giờ/ngày theo Múi giờ
+function getTimeData(timeZone) {
     const now = new Date();
-    const vnTimeStr = now.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const jpTimeStr = now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    // Lấy số giờ, phút, giây
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timeZone,
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
+        hour12: false
+    });
+    
+    let hour = 0, minute = 0, second = 0;
+    formatter.formatToParts(now).forEach(p => {
+        if (p.type === 'hour') hour = parseInt(p.value);
+        if (p.type === 'minute') minute = parseInt(p.value);
+        if (p.type === 'second') second = parseInt(p.value);
+    });
 
-    document.getElementById('vn-time').innerText = vnTimeStr;
-    document.getElementById('jp-time').innerText = jpTimeStr;
-}   
+    // Lấy chuỗi Thứ, Ngày/Tháng/Năm dạng tiếng Việt (VD: Thứ Tư, 30/07/2025)
+    const dateStr = now.toLocaleDateString('vi-VN', {
+        timeZone: timeZone,
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 
-setInterval(updateClock, 1000);
-updateClock(); // Initial call to display the time immediately
+    return { hour, minute, second, dateStr };
+}
+
+// 3. Cập nhật góc xoay kim & chữ hiển thị
+function updateClockWidget(prefix, timeZone) {
+    const { hour, minute, second, dateStr } = getTimeData(timeZone);
+
+    // Tính độ xoay kim
+    const secDeg = (second / 60) * 360;
+    const minDeg = ((minute + second / 60) / 60) * 360;
+    const hourDeg = (((hour % 12) + minute / 60) / 12) * 360;
+
+    // Xoay kim
+    const hHand = document.getElementById(`${prefix}-hour`);
+    const mHand = document.getElementById(`${prefix}-minute`);
+    const sHand = document.getElementById(`${prefix}-second`);
+    
+    if (hHand) hHand.style.transform = `rotate(${hourDeg}deg)`;
+    if (mHand) mHand.style.transform = `rotate(${minDeg}deg)`;
+    if (sHand) sHand.style.transform = `rotate(${secDeg}deg)`;
+
+    // Cập nhật dòng giờ số (09:41:20)
+    const digiElem = document.getElementById(`${prefix}-digital`);
+    if (digiElem) {
+        const h = String(hour).padStart(2, '0');
+        const m = String(minute).padStart(2, '0');
+        const s = String(second).padStart(2, '0');
+        digiElem.innerText = `${h}:${m}:${s}`;
+    }
+
+    // Cập nhật ngày tháng
+    const dateElem = document.getElementById(`${prefix}-date`);
+    if (dateElem) dateElem.innerText = dateStr;
+}
+
+// 4. Chạy chương trình
+document.addEventListener("DOMContentLoaded", function() {
+    // Vẽ vạch 12 giờ cho 2 đồng hồ
+    buildClockTicks('clock-face-vn');
+    buildClockTicks('clock-face-jp');
+
+    // Cập nhật thời gian liên tục mỗi giây
+    function tickAll() {
+        updateClockWidget('vn', 'Asia/Ho_Chi_Minh');
+        updateClockWidget('jp', 'Asia/Tokyo');
+    }
+
+    tickAll();
+    setInterval(tickAll, 1000);
+    setInterval(() => {
+        
+}, interval);updateClock(); // Initial call to display the time immediately
+    setInterval(updateClock, 1000);
+});
 
 //2. JavaScript code progress bar
 
@@ -43,9 +124,9 @@ updateProgressBar();
 const modal = document.getElementById('post-modal'); //Tìm giá trị trong HTML
 const btnCloseModal = document.getElementById('btn-close-modal'); //Tìm giá trị trong HTML
 const btnSubmitPost = document.getElementById('btn-submit-post'); //Tìm giá trị trong HTML
-const fileInput = document.getElementById('post-input-file'); //Tìm giá trị trong HTML
+const fileInput = document.getElementById('post-input-file').files[0]; //Tìm giá trị trong HTML
 const previewBox = document.getElementById('image-preview'); //Tìm giá trị trong HTML
-const textInput = document.getElementById('post-input-text'); //Tìm giá trị trong HTML
+const textInput = document.getElementById('post-input-text').value; //Tìm giá trị trong HTML
 const feedContainer = document.querySelector('.feed-container'); //Tìm giá trị trong CSS
 let selectedImageBase64 = ''; //Biến tạm chứa dữ liệu ảnh
 //3.1 Mở Modal đăng bài
@@ -55,8 +136,8 @@ function openPostModal() {
 //3.2 Đóng Modal đăng bài và dọn dẹp
 function closePostModal() {
     if(modal) modal.classList.remove('active');
-    textInput.value = '';
-    fileInput.value = '';
+    textInput.value = "";
+    fileInput.value = "";
     previewBox.innerHTML = '';
     selectedImageBase64 = '';
 }
@@ -82,7 +163,7 @@ if(fileInput) {
 //3.5 Xử lý khi bấm nút "Đăng bài"
 if(btnSubmitPost) {
     btnSubmitPost.addEventListener('click', function() {
-        const content = textInput.value.trim();
+        const content = textInput.value;
         if (!content && !selectedImageBase64) {
             alert('Phương ơi, hãy gõ nội dung hoặc chọn một tấm ảnh nhé!');
             return;
@@ -142,76 +223,13 @@ navItems.forEach(item => {
     });
 });
 
-//5. Database
-const firebaseConfig = {
-  apiKey: "AIzaSyBGqOyIaK8K_pCfuym9YqrRR4g83jBvbYc",
-  authDomain: "hikari-space-e6f88.firebaseapp.com",
-  projectId: "hikari-space-e6f88",
-  storageBucket: "hikari-space-e6f88.firebasestorage.app",
-  messagingSenderId: "132300026099",
-  appId: "1:132300026099:web:3a1790b84d5433c1310786",
-  measurementId: "G-FQNGCW6RH2"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-//6. Xử lý khung Nhật ký ảnh
-//6.1 Lắng nghe ảnh mới từ Colection "moments" trên Firebase
-db.collection("moments_demo").orderBy("createdAt", "desc")
-  .onSnapshot(snapshot => {
-      const momentsList = document.getElementById('moments-list');
-      
-      //6.1.1 Giữ lại nút "+ Thêm ảnh" ở đầu, xóa đống ảnh cũ đi vẽ lại
-      const addBtnHTML = momentsList.querySelector('.moment-add-card').outerHTML;
-      momentsList.innerHTML = addBtnHTML;
-
-      snapshot.forEach(doc => {
-          const data = doc.data();
-          const item = document.createElement('div');
-          item.className = 'moment-item';
-          item.innerHTML = `<img src="${data.imageUrl}" alt="A shared community memory with a warm, everyday social atmosphere. The image shows a cozy indoor scene with natural light and a gentle mood. No text is visible.">`;
-          momentsList.appendChild(item);
-      });
-  });
-
-//6.2 Tải ảnh nhanh lên Khung Khoảnh Khắc khi bấm nút "+"
-const momentFileInput = document.getElementById('moment-file-input');
-if(momentFileInput) {
-    momentFileInput.addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            //6.2.1 Upload ảnh lên Firebase Storage
-            const storageRef = storage.ref(`moments/${Date.now()}_${file.name}`);
-            await storageRef.put(file);
-            const imageUrl = await storageRef.getDownloadURL();
-
-            //6.2.2 Lưu link ảnh vào Collection "moments"
-            await db.collection("moments_demo").add({
-                imageUrl: imageUrl,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert('Đã thêm 1 tấm ảnh vào Khoảnh khắc chung! ✨');
+// Sự kiện bấm nút (+) Nổi để mở Modal Đăng bài
+const fabBtn = document.getElementById('fab-post-btn');
+if (fabBtn) {
+    fabBtn.addEventListener('click', function() {
+        // Gọi hàm mở popup đăng bài của em
+        if (typeof openPostModal === 'function') {
+            openPostModal();
         }
-    });
-    imageHTML = `<img src="${imageUrl}" alt="A photo shared by the community in a cozy indoor setting with soft natural light and a gentle, welcoming mood. No text is visible." style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
-}
-
-//7. Gửi bài đăng lên cloud
-async function submitPostToFirebase(content, file) {
-    let imageUrl = "";
-    if(file) {
-       const storageRef = storage.ref(`images/${Date.now()}_${file.name}`);
-       await storageRef.put(file);
-       imageUrl = await storageRef.getDownloadURL();
-       imageHTML = `<img src="${imageUrl}" alt="A photo shared by the community in a cozy indoor setting with soft natural light and a gentle, welcoming mood. No text is visible." style="max-width:100%; border-radius:12px; margin-top:8px;" />`;
-    }
-    await db.collection("posts_demo").add({
-        author: "Ouji",
-        location: "Việt Nam 🇻🇳",
-        content: content,
-        imageUrl: imageUrl,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 }

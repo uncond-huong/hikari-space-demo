@@ -14,10 +14,43 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>HIKARI</h1>
-    <div class="subtitle">Khoảng cách địa lý không làm mờ đi ánh sáng</div>
+  <header class="top-header">
+    <div class="header-left">
+      <button class="menu-icon-btn" id="open-sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div class="greeting-box">
+        <h1 class="greeting-title">Xin chào, <span id="user-name"></span>👋</h1>
+        <p class="greeting-subtitle">Cùng nhau chia sẻ mỗi ngày 🌸</p>
+      </div>
+    </div>
+
+    <div class="header-right">
+        <!-- Nút Chuông có chấm đỏ -->
+        <button class="notif-btn" id="notif-btn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notif-badge"></span>
+        </button>
+        <div class="user-avatar">
+          <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Hikari" alt="Avatar" class="user-avatar" id="header-avatar">
+          <span class="online-status"></span>
+        </div>
+    </div>
   </header>
+
+  <button class="fab-add-btn" id="fab-post-btn" onclick="openPostModal()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+</button>
 
   <main class="main-container">
 
@@ -25,15 +58,56 @@
     <section class="clock-container">
      <!-- Đồng hồ Việt Nam -->
      <div class="clock-card vn-card">
-      <div class="location-title">Việt Nam (ICT) &#x1f1f3;</div>
-      <div class="time-display" id="vn-time">--:--:--</div>
-     </div>
+      <div class="floral-bg floral-sen">🪷</div>
+      
+      <div class="card-header">
+        <span class="header-icon">🪷</span>
+        <div class="header-text">
+          <div class="country-name">Việt Nam</div>
+          <div class="flower-name">Hoa Sen</div>
+        </div>
+      </div>
+
+      <div class="clock-circle" id="clock-face-vn">
+        <div class="clock-pattern sen-pattern">🪷</div>
+        
+        <div class="hand hour-hand" id="vn-hour"></div>
+        <div class="hand minute-hand" id="vn-minute"></div>
+        <div class="hand second-hand vn-second-color" id="vn-second"></div>
+        <div class="clock-center-dot"></div>
+      </div>
+
+      <div class="digital-time vn-text-color" id="vn-digital">00:00:00</div>
+      <div class="date-text" id="vn-date">Thứ...,--/--/--</div>
+      <div class="utc-badge vn-badge">UTC+7</div>
+    </div>
 
      <!-- Đồng hồ Nhật Bản -->
      <div class="clock-card jp-card">
-      <div class="location-title">Nhật Bản (JST) &#127477;</div>
-      <div class="time-display" id="jp-time">--:--:--</div>
-     </div>
+      <div class="floral-bg floral-sakura">🌸</div>
+      
+      <div class="card-header">
+        <span class="header-icon">🌸</span>
+        <div class="header-text">
+          <div class="country-name">Nhật Bản</div>
+          <div class="flower-name">Hoa Anh Đào</div>
+        </div>
+      </div>
+
+      <div class="clock-circle" id="clock-face-jp">
+        <div class="clock-pattern sakura-pattern">🌸</div>
+
+        <div class="hand hour-hand" id="jp-hour"></div>
+        <div class="hand minute-hand" id="jp-minute"></div>
+        <div class="hand second-hand jp-second-color" id="jp-second"></div>
+        <div class="clock-center-dot"></div>
+      </div>
+
+      <div class="digital-time jp-text-color" id="jp-digital">00:00:00</div>
+      <div class="date-text" id="jp-date">Thứ...,--/--/--</div>
+      <div class="utc-badge jp-badge">UTC+9</div>
+    </div>
+
    </section>
 
     <!--2.THẺ THANH TIẾN ĐỘ-->
@@ -128,9 +202,8 @@
   </div>
 
   <!--3. Kết nối thư viện Firebase SDK-->
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script
+  <script src="firebase.js"></script>
 
   <!--4. Kết nối tệp JavaScript-->
   <script src="script.js"></script>
