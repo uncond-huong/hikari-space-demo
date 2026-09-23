@@ -20,6 +20,13 @@ body {
   min-height: 100vh;
   padding-bottom: 90px;
 }
+.app-container {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
 
 /* 3. Trang trí phần Header */
 /* ==================== 1. STYLES TOP HEADER ==================== */
@@ -27,8 +34,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 4px 18px 4px;
-    margin-bottom: 10px;
+    padding: 16px 0;
+    box-sizing: border-box;
 }
 
 .header-left {
@@ -40,6 +47,7 @@ body {
 .menu-icon-btn {
     background: none;
     border: none;
+    font-size: 22px;
     padding: 4px;
     cursor: pointer;
     display: flex;
@@ -52,12 +60,14 @@ body {
     flex-direction: column;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
+
 .greeting-title {
-    font-size: 1.15rem;
+    font-size: 24px;
     font-weight: 700;
-    color: #2D2D2D;
+    color: #4A3E3D;
     margin: 0;
-    font-family: 'Playfair Display', Georgia, cursive, sans-serif; /* Font mềm nghệ thuật */
+    font-family: 'Caveat', cursive; /* Font mềm nghệ thuật */
 }
 
 .greeting-title span {
@@ -74,7 +84,8 @@ body {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    margin-right: 0;
 }
 
 /* Nút chuông thông báo */
@@ -104,7 +115,7 @@ body {
 }
 
 /* Avatar & Chấm Online */
-.user-avatar-wrapper {
+.user-avatar {
     position: relative;
     width: 40px;
     height: 40px;
@@ -112,8 +123,8 @@ body {
 }
 
 .user-avatar {
-    width: 100%;
-    height: 100%;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #FFFFFF;
@@ -199,6 +210,7 @@ body {
 .vn-card {
   background-color: linear-gradient(180deg, #F4FAF2 0%, #E7F3E5 100%); /* Xanh nhạt (Việt Nam) */
 }
+
 .jp-card {
   background-color: linear-gradient(180deg, #FFF5F7 0%, #FDE7EC 100%); /* Hồng nhạt (Nhật Bản) */
 }
@@ -233,24 +245,40 @@ body {
 
 /* Mặt đồng hồ tròn */
 .clock-circle {
-  width: 110px;
-  height: 110px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background: #FFFFFF;
   position: relative;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.04), 0 6px 15px rgba(0, 0, 0, 0.04);
   border: 3px solid #FFFFFF;
   margin-bottom: 10px;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Hoa văn mờ giữa mặt đồng hồ */
 .clock-pattern {
   position: absolute;
-  top: 55%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.2rem;
-  opacity: 0.25;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 1.5rem;
+  opacity: 0.5;
   pointer-events: none;
+}
+.sen-pattern {
+  background-image: url('nenlotus.png');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+.sakura-pattern {
+  background-image: url('nensakura.png');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
 }
 
 /* Vạch kẻ chia 12h */
@@ -262,6 +290,7 @@ body {
   top: 4px;
   left: calc(50% - 0.75px);
   transform-origin: 0.75px 51px;
+  opacity: 2;
 }
 
 /* Nút chốt màu ở tâm */
