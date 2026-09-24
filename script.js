@@ -1,12 +1,15 @@
 // 1. Hàm tự động vẽ 12 vạch chia giờ tròn xịn xò
 function buildClockTicks(clockFaceId) {
     const clockFace = document.getElementById(clockFaceId);
+    const offsetDistance = "-62px";
     if (!clockFace) return;
     
     for (let i = 0; i < 12; i++) {
         const tick = document.createElement('div');
         tick.className = 'clock-tick-mark';
-        tick.style.transform = `rotate(${i * 30}deg)`;
+        if (i % 3 === 0) tick.classList.add("main-tick");
+        const angle = i * 30;
+        tick.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(${offsetDistance})`;
         clockFace.appendChild(tick);
     }
 }
