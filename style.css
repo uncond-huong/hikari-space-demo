@@ -262,6 +262,8 @@ body {
   top: 0; left: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
+  transform: none;
   font-size: 1.5rem;
   opacity: 0.85;
   pointer-events: none;
@@ -270,13 +272,13 @@ body {
 .sen-pattern {
   background-image: url('nenlotus.png');
   background-size: cover;
-  background-position: center bottom;
+  background-position: center;
   background-repeat: no-repeat;
 }
 .sakura-pattern {
   background-image: url('nensakura.png');
   background-size: cover;
-  background-position: center bottom;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -289,14 +291,16 @@ body {
   height: 8.5px;
   opacity: 1;
   border-radius: 2px;
+  margin-left: -1px;
+  margin-top: -2px;
   z-index: 4;
   pointer-events: none;
 }
 .vn-card .clock-tick-mark {
-  background-color: #365038;
+  background-color: #335936;
 }
 .jp-card .clock-tick-mark {
-  background-color: #5c2f3a;
+  background-color: #912e47;
 }
 
 /* Nút chốt màu ở tâm */
