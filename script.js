@@ -1,9 +1,8 @@
 // ==========================================
-// 0. IMPORT FIREBASE (LUÔN ĐẶT TRÊN ĐẦU FILE)
+// 0. IMPORT FIREBASE (ĐÃ BỎ FIREBASE STORAGE)
 // ==========================================
 import { 
-    db, 
-    storage, 
+    db,  
     collection, 
     addDoc,
     doc,
@@ -11,22 +10,41 @@ import {
     onSnapshot, 
     serverTimestamp, 
     query, 
-    orderBy, 
-    ref, 
-    uploadBytes, 
-    getDownloadURL 
+    orderBy
 } from "./firebase.js";
+
+// ==========================================
+// THÔNG TIN CLOUDINARY (THAY CHO FIREBASE STORAGE)
+// ==========================================
+const CLOUD_NAME = "zwyvvrql"; 
+const UPLOAD_PRESET = "hikari-preset"; // Ví dụ: ml_default hoặc hikari_preset
+
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+    if (data.secure_url) {
+        return data.secure_url;
+    } else {
+        throw new Error(data.error?.message || "Lỗi tải media lên Cloudinary!");
+    }
+}
 
 // ==========================================
 // 1. ĐỒNG HỒ & MÚI GIỜ
 // ==========================================
 
-// 1.1 Tự động vẽ 12 vạch chia giờ (Giữ nguyên vạch, không xóa hình nền)
 function buildClockTicks(clockFaceId) {
     const clockFace = document.getElementById(clockFaceId);
     if (!clockFace) return;
     
-    // Chỉ xóa các vạch tick cũ nếu có, giữ nguyên thẻ chứa pattern hình nền
     const oldTicks = clockFace.querySelectorAll('.clock-tick-mark');
     oldTicks.forEach(tick => tick.remove());
 
@@ -40,7 +58,6 @@ function buildClockTicks(clockFaceId) {
     }
 }
 
-// 1.2 Lấy dữ liệu giờ/ngày theo Múi giờ
 function getTimeData(timeZone) {
     const now = new Date();
     
@@ -68,7 +85,6 @@ function getTimeData(timeZone) {
     return { hour, minute, second, dateStr };
 }
 
-// 1.3 Cập nhật góc xoay kim & chữ hiển thị
 function updateClockWidget(prefix, timeZone) {
     const { hour, minute, second, dateStr } = getTimeData(timeZone);
 
@@ -157,12 +173,10 @@ function setupCreatePostEvents() {
     const videoFileInput = document.getElementById('post-file-video');
     const previewContainer = document.getElementById('post-screen-preview');
 
-    // Mở màn hình khi bấm nút + hoặc nút Khoảnh khắc ở bottom nav
     if (fabBtn) fabBtn.addEventListener('click', openCreatePostScreen);
     if (navPostBtn) navPostBtn.addEventListener('click', openCreatePostScreen);
     if (btnBackPost) btnBackPost.addEventListener('click', closeCreatePostScreen);
 
-    // Xử lý xem trước file (Ảnh hoặc Video)
     function handleFileSelected(file) {
         if (!file) return;
         selectedPostFile = file;
@@ -192,7 +206,7 @@ function setupCreatePostEvents() {
     if (imageFileInput) imageFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
     if (videoFileInput) videoFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
 
-    // Đăng bài lên Firebase
+    // Đăng bài với Cloudinary & Firestore
     if (btnSubmitScreenPost) {
         btnSubmitScreenPost.addEventListener('click', async () => {
             const textInputScreen = document.getElementById('post-screen-text');
@@ -212,12 +226,11 @@ function setupCreatePostEvents() {
 
                 if (selectedPostFile) {
                     isVideo = selectedPostFile.type.startsWith('video/');
-                    const folder = isVideo ? 'videos' : 'images';
-                    const storageRef = ref(storage, `${folder}/${Date.now()}_${selectedPostFile.name}`);
-                    await uploadBytes(storageRef, selectedPostFile);
-                    mediaUrl = await getDownloadURL(storageRef);
+                    // Tải file lên Cloudinary
+                    mediaUrl = await uploadToCloudinary(selectedPostFile);
                 }
 
+                // Lưu vào Firestore collection "posts_test"
                 await addDoc(collection(db, "posts_test"), {
                     author: "Ouji",
                     location: "Việt Nam 🇻🇳",
@@ -253,7 +266,6 @@ function setupStatusModalEvents() {
     const myStatusBubble = document.getElementById('my-status-bubble');
     const emojiChips = document.querySelectorAll('.emoji-chip');
 
-    // ID người dùng hiện tại (Demo)
     const CURRENT_USER_ID = "Ouji";
 
     if (myAvatarWrapper) {
@@ -274,7 +286,6 @@ function setupStatusModalEvents() {
         });
     });
 
-    //1. LƯU TRÊN FIREBASE KHI BẤM NÚT
     if (btnSaveStatus) {
         btnSaveStatus.addEventListener('click', async () => {
             const newStatus = inputUserStatus ? inputUserStatus.value.trim() : '';
@@ -283,7 +294,6 @@ function setupStatusModalEvents() {
                 btnSaveStatus.disabled = true;
 
                 try {
-                    // Lưu vào Firestore Collection "user_status"
                     await setDoc(doc(db, "user_status", CURRENT_USER_ID), {
                         status: newStatus,
                         updatedAt: serverTimestamp()
@@ -302,7 +312,6 @@ function setupStatusModalEvents() {
         });
     }
 
-    // 2. LẮNG NGHE REALTIME: F5 hay mở máy khác đều tự hiển thị đúng cảm xúc
     onSnapshot(doc(db, "user_status", CURRENT_USER_ID), (docSnap) => {
         if (docSnap.exists() && docSnap.data().status && myStatusBubble) {
             myStatusBubble.innerText = docSnap.data().status;
@@ -319,7 +328,7 @@ function setupNavigation() {
     const navItems = document.querySelectorAll('.bottom-nav .nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
-            if (this.id === 'btn-open-post') return; // Nút tạo bài mở màn hình riêng
+            if (this.id === 'btn-open-post') return;
             navItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
             const targetSectionId = this.getAttribute('data-target');
@@ -332,7 +341,6 @@ function setupNavigation() {
 // 6. FIREBASE REALTIME LISTENERS
 // ==========================================
 
-// Lắng nghe bài viết mới từ Firestore và hiển thị ra Feed
 function listenToPostsRealtime() {
     const postsQuery = query(collection(db, "posts_test"), orderBy("createdAt", "desc"));
 
@@ -378,7 +386,6 @@ function listenToPostsRealtime() {
     });
 }
 
-// Lắng nghe ảnh Khoảnh khắc cuộn ngang
 function listenToMomentsRealtime() {
     const momentsQuery = query(collection(db, "moments_test"), orderBy("createdAt", "desc"));
 
@@ -402,7 +409,7 @@ function listenToMomentsRealtime() {
     });
 }
 
-// Upload khoảnh khắc nhanh
+// Upload khoảnh khắc nhanh bằng Cloudinary
 function setupMomentUploadListener() {
     const momentFileInput = document.getElementById('moment-file-input');
     if (momentFileInput && !momentFileInput.dataset.hasListener) {
@@ -411,10 +418,10 @@ function setupMomentUploadListener() {
             const file = e.target.files[0];
             if (!file) return;
             try {
-                const storageRef = ref(storage, `moments/${Date.now()}_${file.name}`);
-                await uploadBytes(storageRef, file);
-                const imageUrl = await getDownloadURL(storageRef);
+                // Tải ảnh khoảnh khắc lên Cloudinary
+                const imageUrl = await uploadToCloudinary(file);
                 
+                // Lưu link vào Firestore collection "moments_test"
                 await addDoc(collection(db, "moments_test"), {
                     imageUrl: imageUrl,
                     createdAt: serverTimestamp()
@@ -434,7 +441,6 @@ function setupMomentUploadListener() {
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Dựng vạch đồng hồ & chạy đếm giờ
     buildClockTicks('clock-face-vn');
     buildClockTicks('clock-face-jp');
     
@@ -445,15 +451,12 @@ document.addEventListener("DOMContentLoaded", function() {
     tickAll();
     setInterval(tickAll, 1000);
 
-    // 2. Chạy thanh tiến trình
     updateProgressBar();
 
-    // 3. Khởi tạo các sự kiện giao diện
     setupCreatePostEvents();
     setupStatusModalEvents();
     setupNavigation();
 
-    // 4. Khởi tạo Firebase listeners
     setupMomentUploadListener();
     listenToMomentsRealtime();
     listenToPostsRealtime();
