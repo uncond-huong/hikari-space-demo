@@ -218,7 +218,7 @@ function setupCreatePostEvents() {
                     mediaUrl = await getDownloadURL(storageRef);
                 }
 
-                await addDoc(collection(db, "posts_demo"), {
+                await addDoc(collection(db, "posts_test"), {
                     author: "Ouji",
                     location: "Việt Nam 🇻🇳",
                     content: content,
@@ -334,7 +334,7 @@ function setupNavigation() {
 
 // Lắng nghe bài viết mới từ Firestore và hiển thị ra Feed
 function listenToPostsRealtime() {
-    const postsQuery = query(collection(db, "posts_demo"), orderBy("createdAt", "desc"));
+    const postsQuery = query(collection(db, "posts_test"), orderBy("createdAt", "desc"));
 
     onSnapshot(postsQuery, (snapshot) => {
         const feedContainer = document.getElementById('feed-posts');
@@ -380,7 +380,7 @@ function listenToPostsRealtime() {
 
 // Lắng nghe ảnh Khoảnh khắc cuộn ngang
 function listenToMomentsRealtime() {
-    const momentsQuery = query(collection(db, "moments_demo"), orderBy("createdAt", "desc"));
+    const momentsQuery = query(collection(db, "moments_test"), orderBy("createdAt", "desc"));
 
     onSnapshot(momentsQuery, (snapshot) => {
         const momentsList = document.getElementById('moments-list');
@@ -415,7 +415,7 @@ function setupMomentUploadListener() {
                 await uploadBytes(storageRef, file);
                 const imageUrl = await getDownloadURL(storageRef);
                 
-                await addDoc(collection(db, "moments_demo"), {
+                await addDoc(collection(db, "moments_test"), {
                     imageUrl: imageUrl,
                     createdAt: serverTimestamp()
                 });
