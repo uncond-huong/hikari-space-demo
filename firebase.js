@@ -19,4 +19,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
 
-export { db, storage, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, ref, uploadBytes, getDownloadURL };
+export { db, storage, collection, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy, ref, uploadBytes, getDownloadURL };

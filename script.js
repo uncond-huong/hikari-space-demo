@@ -5,7 +5,9 @@ import {
     db, 
     storage, 
     collection, 
-    addDoc, 
+    addDoc,
+    doc,
+    setDoc,
     onSnapshot, 
     serverTimestamp, 
     query, 
@@ -251,6 +253,9 @@ function setupStatusModalEvents() {
     const myStatusBubble = document.getElementById('my-status-bubble');
     const emojiChips = document.querySelectorAll('.emoji-chip');
 
+    // ID người dùng hiện tại (Demo)
+    const CURRENT_USER_ID = "Ouji";
+
     if (myAvatarWrapper) {
         myAvatarWrapper.addEventListener('click', () => {
             if (statusModal) statusModal.classList.add('active');
@@ -269,17 +274,41 @@ function setupStatusModalEvents() {
         });
     });
 
+    //1. LƯU TRÊN FIREBASE KHI BẤM NÚT
     if (btnSaveStatus) {
-        btnSaveStatus.addEventListener('click', () => {
+        btnSaveStatus.addEventListener('click', async () => {
             const newStatus = inputUserStatus ? inputUserStatus.value.trim() : '';
-            if (newStatus && myStatusBubble) {
-                myStatusBubble.innerText = newStatus;
-                myStatusBubble.style.display = 'block';
+            if (newStatus) {
+                btnSaveStatus.innerText = "Lưu...";
+                btnSaveStatus.disabled = true;
+
+                try {
+                    // Lưu vào Firestore Collection "user_status"
+                    await setDoc(doc(db, "user_status", CURRENT_USER_ID), {
+                        status: newStatus,
+                        updatedAt: serverTimestamp()
+                    });
+
+                    if (statusModal) statusModal.classList.remove('active');
+                    if (inputUserStatus) inputUserStatus.value = '';
+                } catch (error) {
+                    console.error("Lỗi lưu cảm xúc:", error);
+                    alert("Không lưu được cảm xúc: " + error.message);
+                } finally {
+                    btnSaveStatus.innerText = "Cập nhật";
+                    btnSaveStatus.disabled = false;
+                }
             }
-            if (statusModal) statusModal.classList.remove('active');
-            if (inputUserStatus) inputUserStatus.value = '';
         });
     }
+
+    // 2. LẮNG NGHE REALTIME: F5 hay mở máy khác đều tự hiển thị đúng cảm xúc
+    onSnapshot(doc(db, "user_status", CURRENT_USER_ID), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().status && myStatusBubble) {
+            myStatusBubble.innerText = docSnap.data().status;
+            myStatusBubble.style.display = 'block';
+        }
+    });
 }
 
 // ==========================================
