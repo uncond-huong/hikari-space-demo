@@ -1,41 +1,47 @@
-/* 1. Khai báo bảng màu Pastel chuẩn từ Figma */
+/* 1. Import Font nghệ thuật Caveat lên đầu file */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
+
+/* 2. Khai báo bảng màu Pastel chuẩn từ Figma */
 :root {
-  --bg-main: #F8F4EA;    /* Nền kèm nhạt*/
-  --pink-card: #FDE9EE;  /* Hồng nhạt (Nhật Bản) */
-  --green-card: #E8F3E6; /* Xanh nhạt (Việt Nam) */ 
-  --text-main: #F5C525C;   /* Chữ xám trầm sang trọng */
-  --text-sub: #8D808D;   /* Chữ phụ */
+  --bg-main: #F8F4EA;     /* Nền kem nhạt */
+  --pink-card: #FDE9EE;   /* Hồng nhạt (Nhật Bản) */
+  --green-card: #E8F3E6;  /* Xanh nhạt (Việt Nam) */ 
+  --text-main: #4A3E3D;   /* Chữ xám trầm sang trọng */
+  --text-sub: #8D808D;    /* Chữ phụ */
+  --primary-pink: #FF7B9C;
 }
 
-/* 2. Cấu hình chung cho toàn trang web */
+/* 3. Cấu hình chung cho toàn trang web */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Be Vietnam Pro', sans-serif; /* Sử dụng font chữ Be Vietnam Pro */
-  background-color: var(--bg-main); /* Nền chính */
-  color: var(--text-main); /* Màu chữ chính */
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
   margin: 0;
-  padding: 20px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding-bottom: 90px;
 }
+
 .app-container {
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  padding: 0 16px;
-  box-sizing: border-box;
+  padding: 0 16px 90px 16px; /* Padding bottom 90px để tránh che bởi Bottom Nav */
+  position: relative;
 }
 
-/* 3. Trang trí phần Header */
-/* ==================== 1. STYLES TOP HEADER ==================== */
+/* ==================== 4. STYLES TOP HEADER ==================== */
 .top-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 16px 0;
-    box-sizing: border-box;
 }
 
 .header-left {
@@ -60,14 +66,12 @@ body {
     flex-direction: column;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
-
 .greeting-title {
     font-size: 24px;
     font-weight: 700;
     color: #4A3E3D;
     margin: 0;
-    font-family: 'Caveat', cursive; /* Font mềm nghệ thuật */
+    font-family: 'Caveat', cursive;
 }
 
 .greeting-title span {
@@ -85,7 +89,6 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-right: 0;
 }
 
 /* Nút chuông thông báo */
@@ -114,39 +117,64 @@ body {
     border: 1.5px solid #FFFFFF;
 }
 
-/* Avatar & Chấm Online */
-.user-avatar {
+/* Avatar & Bong bóng suy nghĩ */
+.user-profile-bar {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-wrapper {
     position: relative;
-    width: 40px;
-    height: 40px;
+    display: inline-block;
     cursor: pointer;
 }
 
-.user-avatar {
-    width: 36px;
-    height: 36px;
+.user-avatar-img {
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #FFFFFF;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    background: #FEEBF0;
+    border: 2px solid #FFD1DC;
 }
 
-.online-status {
+.thought-bubble {
     position: absolute;
-    bottom: 1px;
-    right: 1px;
-    width: 10px;
-    height: 10px;
-    background: #2ECC71; /* Màu xanh lá online */
-    border-radius: 50%;
-    border: 2px solid #FFFFFF;
+    top: -12px;
+    right: -10px;
+    background: #FFFFFF;
+    border: 1.5px solid #FFD1DC;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+    z-index: 2;
+    color: #4A4A4A;
 }
 
-/* ==================== 2. STYLES NÚT BẤM NỔI (FAB +) ==================== */
+.thought-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 10px;
+    width: 6px;
+    height: 6px;
+    background: #FFFFFF;
+    border-right: 1.5px solid #FFD1DC;
+    border-bottom: 1.5px solid #FFD1DC;
+    transform: rotate(45deg);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ==================== 5. NÚT BẤM NỔI (FAB +) ==================== */
 .fab-add-btn {
     position: fixed;
-    bottom: 82px; /* Nằm ngay trên thanh Menu Footer */
+    bottom: 82px;
     right: 20px;
     width: 54px;
     height: 54px;
@@ -167,58 +195,47 @@ body {
     box-shadow: 0 4px 10px rgba(232, 93, 117, 0.3);
 }
 
+/* ==================== 6. MAIN CONTAINER ==================== */
 .main-container {
   width: 100%;
-  max-width: 380px; /* Giới hạn chiều rộng tối đa */
   display: flex;
   flex-direction: column;
-  gap: 15px
+  gap: 15px;
 }
 
-.subtitle {
-  font-size: 0.9rem;
-  color: var(--text-sub);
-  font-style: italic;
-}
-
-/*-- THIẾT KẾ ĐỒNG HỒ KÉP --*/
-/* 4. Trang trí Thẻ Đồng hồ kép */
+/* ==================== 7. THIẾT KẾ ĐỒNG HỒ KÉP ==================== */
 .clock-container {
   width: 100%;
-  max-width: 380px; /* Giới hạn chiều rộng tối đa */
   display: grid;
   grid-template-columns: 1fr 1fr;
-  flex-direction: row;
-  gap: 14px; /* Khoảng cách giữa các đồng hồ */
-  box-sizing: border-box;
-  margin-bottom: 24px;
-
+  gap: 12px;
+  margin-bottom: 10px;
 }
+
 .clock-card {
   position: relative;
-  border-radius: 28px; /* Bo tròn các góc */
-  padding: 16px 14px;
+  border-radius: 24px;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); /* Bóng đổ nhẹ */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-/* 5. Phối màu riêng cho từng cái đồng hồ */
 .vn-card {
-  background-color: linear-gradient(180deg, #F4FAF2 0%, #E7F3E5 100%); /* Xanh nhạt (Việt Nam) */
+  background: linear-gradient(180deg, #F4FAF2 0%, #E7F3E5 100%);
 }
 
 .jp-card {
-  background-color: linear-gradient(180deg, #FFF5F7 0%, #FDE7EC 100%); /* Hồng nhạt (Nhật Bản) */
+  background: linear-gradient(180deg, #FFF5F7 0%, #FDE7EC 100%);
 }
 
 .floral-bg {
   position: absolute;
-  font-size: 4rem;
-  opacity: 0.15;
+  font-size: 3.5rem;
+  opacity: 0.12;
   pointer-events: none;
 }
 .floral-sen { top: -10px; left: -10px; }
@@ -227,45 +244,40 @@ body {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-.header-icon { font-size: 1.2rem; }
+.header-icon { font-size: 1.1rem; }
 .country-name {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #333333;
   line-height: 1.1;
 }
 .flower-name {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: #888888;
 }
 
 /* Mặt đồng hồ tròn */
 .clock-circle {
-  width: 150px;
-  height: 150px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   background: #FFFFFF;
   position: relative;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.04), 0 6px 15px rgba(0, 0, 0, 0.04);
   border: 3px solid #FFFFFF;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   overflow: hidden;
 }
 
-/* Hoa văn mờ giữa mặt đồng hồ */
 .clock-pattern {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
   height: 100%;
-  margin: 0;
-  transform: none;
-  font-size: 1.5rem;
-  opacity: 0.85;
   pointer-events: none;
   z-index: 1;
 }
@@ -273,37 +285,28 @@ body {
   background-image: url('nenlotus.png');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 .sakura-pattern {
   background-image: url('nensakura.png');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
-/* Vạch kẻ chia 12h */
+/* Vạch chia 12h & Kim đồng hồ */
 .clock-tick-mark {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 1.25px;
   height: 8.5px;
-  opacity: 1;
   border-radius: 2px;
   margin-left: -1px;
   margin-top: -2px;
   z-index: 4;
-  pointer-events: none;
 }
-.vn-card .clock-tick-mark {
-  background-color: #335936;
-}
-.jp-card .clock-tick-mark {
-  background-color: #912e47;
-}
+.vn-card .clock-tick-mark { background-color: #335936; }
+.jp-card .clock-tick-mark { background-color: #912e47; }
 
-/* Nút chốt màu ở tâm */
 .clock-center-dot {
   width: 6px;
   height: 6px;
@@ -315,7 +318,6 @@ body {
   z-index: 10;
 }
 
-/* Khu vực kim đồng hồ */
 .hand {
   position: absolute;
   bottom: 50%;
@@ -325,60 +327,41 @@ body {
   z-index: 5;
 }
 
-.hour-hand {
-  width: 3.5px;
-  height: 30px;
-  background: #333333;
-  margin-left: -1.75px;
-}
-.minute-hand {
-  width: 2.5px;
-  height: 40px;
-  background: #555555;
-  margin-left: -1.25px;
-}
-.second-hand {
-  width: 1.5px;
-  height: 44px;
-  margin-left: -0.75px;
-}
+.hour-hand { width: 3.5px; height: 26px; background: #333333; margin-left: -1.75px; }
+.minute-hand { width: 2.5px; height: 35px; background: #555555; margin-left: -1.25px; }
+.second-hand { width: 1.5px; height: 40px; margin-left: -0.75px; }
 .vn-second-color { background: #4E8B5C; }
 .jp-second-color { background: #E06D85; }
 
-/* Giờ điện tử, ngày tháng & Badge UTC */
 .digital-time {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 800;
   font-family: 'Segoe UI', system-ui, sans-serif;
-  letter-spacing: 0.5px;
 }
 .vn-text-color { color: #4E8B5C; }
 .jp-text-color { color: #E06D85; }
 
 .date-text {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #7A8B7B;
-  margin: 3px 0 8px 0;
-  font-weight: 500;
+  margin: 2px 0 6px 0;
 }
 
-/* Thẻ UTC Pill */
 .utc-badge {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 .vn-badge { background: #DCEBDC; color: #4E8B5C; }
 .jp-badge { background: #FCE3E8; color: #E06D85; }
 
-/*-- THIẾT KẾ THANH TIẾN ĐỘ --*/
+/* ==================== 8. THANH TIẾN ĐỘ ==================== */
 .progress-card {
   background-color: #FFFFFF;
   border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
+  padding: 14px 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
 }
 .progress-header {
   display: flex;
@@ -386,68 +369,131 @@ body {
   align-items: center;
   font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 #progress-text {
   color: #D86B85;
-  font-weight: 700px;
+  font-weight: 700;
 }
 .progress-track {
   width: 100%;
-  height: 12px;
+  height: 10px;
   background-color: var(--pink-card);
   border-radius: 10px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  width: 0%; /* Bắt đầu từ 0% */
+  width: 0%;
   background: linear-gradient(90deg, #A7C4A1, #F7C6D6);
   border-radius: 10px;
-  transition: width 0.6s ease-in-out; /* Hiệu ứng chuyển động mượt mà */
+  transition: width 0.6s ease-in-out;
 }
 
-.feed-container {
-  width: 100%;
-  margin-top: 10px
+/* ==================== 9. KHOẢNH KHẮC / NHẬT KÝ ==================== */
+.moments-section {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 14px;
 }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+.see-all {
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  text-decoration: none;
+}
+
+.moments-scroll-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-behavior: smooth;
+}
+.moments-scroll-container::-webkit-scrollbar { display: none; }
+
+.moment-add-card {
+  min-width: 75px;
+  height: 95px;
+  border: 2px dashed #F7C6D6;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: #FFFDFE;
+  color: #D86B85;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.plus-icon { font-size: 1.3rem; margin-bottom: 2px; }
+
+/* ==================== 10. FEED BÀI VIẾT ==================== */
+.posts-section {
+  width: 100%;
+}
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tab-btn {
+  background: #FFFFFF;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+.tab-btn.active {
+  background: #FF7B9C;
+  color: white;
+  font-weight: bold;
+}
+
 .post-card {
   background-color: #FFFFFF;
   border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  margin-bottom: 15px;
+  padding: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  margin-bottom: 12px;
 }
 .post-user {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .user-avatar {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  background: #FFF0F5;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
-.user-meta {
-  display: flex;
-  flex-direction: column;
-}
-.user-name {
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-.post-time {
-  font-size: 0.75rem;
-  color: var(--text-sub);
-}
+.user-meta { display: flex; flex-direction: column; }
+.user-name { font-weight: 700; font-size: 0.88rem; }
+.post-time { font-size: 0.72rem; color: var(--text-sub); }
+
 .post-body p {
   margin: 0 0 10px 0;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   line-height: 1.4;
 }
 .post-img-box {
@@ -457,11 +503,29 @@ body {
   border-radius: 12px;
   display: flex;
   align-items: center;
+  justify-content: center;
   color: var(--text-sub);
   font-size: 0.85rem;
   border: 1px dashed #E0D8CE;
 }
 
+.post-footer {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+.btn-like, .btn-comment {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ==================== 11. BOTTOM NAV ==================== */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -474,7 +538,7 @@ body {
   align-items: center;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
   z-index: 1000;
-  max-width: 420px;
+  max-width: 430px;
   margin: 0 auto;
 }
 .nav-item {
@@ -486,183 +550,192 @@ body {
   color: var(--text-sub);
   background: none;
   border: none;
-  transition: all 0.2s ease;
+  cursor: pointer;
 }
 .nav-item.active {
   color: #D86B85;
   font-weight: 700;
 }
-.nav-icon {
-  font-size: 1.2rem;
-}
-.add-btn {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #F7C6D6, #A7C4A1);
-  border-radius: 50%;
-  color: white;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(216, 107, 133, 0.3);
-  margin-top: -15px;
+.nav-icon { font-size: 1.2rem; }
+
+/* ==================== 12. MÀN HÌNH ĐĂNG BÀI TOÀN MÀN HÌNH ==================== */
+.post-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #FFFDF8;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(3px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  padding: 20px
+.post-screen.active {
+    transform: translateY(0);
 }
 
-/* Khi có class .active thì popup mới hiện lên */
-.modal-overlay.active {
-  display: flex;
+.post-screen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
 }
 
-.modal-card {
-  background: #FFFFFF;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 360px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  box-sizing: border-box;
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 15px;
-}
-#btn-close-modal {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: var(--text-sub);
-}
-#post-input-text {
-  width: 100%;
-  height: 90px;
-  border: 1px solid #E8F3E6;
-  border-radius: 12px;
-  padding: 10px;
-  font-family: inherit;
-  resize: none;
-  box-sizing: border-box;
-  outline: none;
-  background-color: var(--bg-main);
-  color: var(--text-main);
-}
-.file-upload-wrapper {
-  margin-top: 10px;
-}
-.file-label {
-  display: inline-block;
-  padding: 8px 14px;
-  background-color: var(--pink-card);
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-main);
-}
-.image-preview-box img {
-  width: 100%;
-  max-height: 160px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-top: 10px;
-}
-.btn-primary {
-  width: 100%;
-  margin-top: 15px;
-  padding: 12px;
-  background: linear-gradient(135deg, #F7C6D6, #A7C4A1);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #4A4A4A;
 }
 
-/* Khung khoảnh khắc */
-.moment-section {
-  background: #FFFFFF;
-  border-radius: 20px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.section-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text-main);
-}
-.see-all {
-  font-size: 0.8rem;
-  color: var(--text-sub);
-  text-decoration: none;
+.submit-text-btn {
+    background: none;
+    border: none;
+    color: #FF7B9C;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
 }
 
-/* Chức năng cuộn ngang */
-.moments-scroll-container {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto; /* Cho phép vuốt ngang trên điện thoại */
-  padding-bottom: 5px;
-  scroll-behavior: smooth;
+.post-screen-body {
+    padding: 0 20px;
+    flex: 1;
+    overflow-y: auto;
 }
-/* Ẩn thanh cuộn gốc */
-.moments-scroll-container::-webkit-scrollbar {
-  display: none;
+
+#post-screen-text {
+    width: 100%;
+    height: 120px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1rem;
+    resize: none;
+    color: #4A4A4A;
+    line-height: 1.5;
+    box-sizing: border-box;
 }
-/* Thẻ nút bấm "+ Thêm ảnh" */
-.moment-add-card {
-  min-width: 80px;
-  height: 100px;
-  border: 2px dashed #F7C6D6;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  flex-shrink: 0; /* Không bị teo nhỏ khi tăng số lượng ảnh */
-  background: #FFFDFE;
-  color: #D86B85;
-  font-size: 0.75rem;
-  font-weight: 600;
+
+.image-preview-container img, 
+.image-preview-container video {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-top: 10px;
 }
-.plus-icon {
-  font-size: 1.4rem;
-  margin-bottom: 4px;
+
+.attach-options-compact {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin: 20px 0;
+    padding: 14px 0;
+    background: #FAFAFA;
+    border-radius: 16px;
 }
-/* Thẻ ảnh kỷ niệm */
-.moment-item {
-  min-width: 80px;
-  height: 100px;
-  border-radius: 14px;
-  overflow: hidden;
-  flex-shrink: 0;
+
+.attach-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #555;
+    cursor: pointer;
 }
-.moment-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Giữ tỉ lệ ảnh không bị móp */
+
+.attach-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 6px;
 }
+
+.bg-orange { background-color: #FFF2E5; }
+.bg-pink   { background-color: #FFEBF0; }
+
+.post-settings {
+    border-top: 1px dashed #EAEAEA;
+    padding-top: 12px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.setting-right {
+    color: #FF7B9C;
+    font-weight: 500;
+}
+
+.lotus-footer-bg {
+    height: 90px;
+    background-image: url('https://uncond-huong.github.io/hikari-app/lotus-illustration.png');
+    background-repeat: repeat-x;
+    background-position: bottom center;
+    background-size: contain;
+    pointer-events: none;
+}
+
+/* ==================== 13. POPUP ĐỔI CẢM XÚC AVATAR ==================== */
+.status-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.status-modal-overlay.active {
+    opacity: 1; pointer-events: auto;
+}
+
+.status-modal-content {
+    background: #FFFDF8;
+    width: 85%; max-width: 320px;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.status-modal-content h4 {
+    margin-top: 0; color: #4A4A4A; font-size: 1rem; text-align: center;
+}
+
+#input-user-status {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #FFD1DC; border-radius: 10px;
+    outline: none; margin: 12px 0; font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.quick-emojis {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px;
+}
+
+.emoji-chip {
+    background: #FFF0F5; color: #555;
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 0.8rem; cursor: pointer;
+}
+
+.status-modal-actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+}
+
+.btn-cancel { background: none; border: none; color: #888; cursor: pointer; }
+.btn-save { background: #FF7B9C; color: white; border: none; padding: 6px 14px; border-radius: 10px; font-weight: bold; cursor: pointer; }

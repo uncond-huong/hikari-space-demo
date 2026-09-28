@@ -19,21 +19,21 @@ import {
 // 1. ĐỒNG HỒ & MÚI GIỜ
 // ==========================================
 
-// 1.1 Tự động vẽ 12 vạch chia giờ
+// 1.1 Tự động vẽ 12 vạch chia giờ (Giữ nguyên vạch, không xóa hình nền)
 function buildClockTicks(clockFaceId) {
     const clockFace = document.getElementById(clockFaceId);
-    const offsetDistance = "-62px";
     if (!clockFace) return;
     
+    // Chỉ xóa các vạch tick cũ nếu có, giữ nguyên thẻ chứa pattern hình nền
     const oldTicks = clockFace.querySelectorAll('.clock-tick-mark');
     oldTicks.forEach(tick => tick.remove());
-    
+
     for (let i = 0; i < 12; i++) {
         const tick = document.createElement('div');
         tick.className = 'clock-tick-mark';
         if (i % 3 === 0) tick.classList.add("main-tick");
         const angle = i * 30;
-        tick.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(${offsetDistance})`;
+        tick.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-52px)`;
         clockFace.appendChild(tick);
     }
 }
@@ -121,90 +121,176 @@ function updateProgressBar() {
 }
 
 // ==========================================
-// 3. POPUP & FEED LOCAL
+// 3. MÀN HÌNH ĐĂNG BÀI TOÀN MÀN HÌNH
 // ==========================================
 
-let selectedImageBase64 = '';
+let selectedPostFile = null;
 
-function openPostModal() {
-    const modal = document.getElementById('post-modal');
-    if (modal) modal.classList.add('active');
+function openCreatePostScreen() {
+    const createPostScreen = document.getElementById('create-post-screen');
+    if (createPostScreen) createPostScreen.classList.add('active');
 }
 
-function closePostModal() {
-    const modal = document.getElementById('post-modal');
-    const textInput = document.getElementById('post-input-text');
-    const fileInput = document.getElementById('post-input-file');
-    const previewBox = document.getElementById('image-preview');
+function closeCreatePostScreen() {
+    const createPostScreen = document.getElementById('create-post-screen');
+    const textInputScreen = document.getElementById('post-screen-text');
+    const previewContainer = document.getElementById('post-screen-preview');
+    const imageFileInput = document.getElementById('post-file-image');
+    const videoFileInput = document.getElementById('post-file-video');
 
-    if (modal) modal.classList.remove('active');
-    if (textInput) textInput.value = "";
-    if (fileInput) fileInput.value = "";
-    if (previewBox) previewBox.innerHTML = '';
-    selectedImageBase64 = '';
+    if (createPostScreen) createPostScreen.classList.remove('active');
+    if (textInputScreen) textInputScreen.value = '';
+    if (previewContainer) previewContainer.innerHTML = '';
+    if (imageFileInput) imageFileInput.value = '';
+    if (videoFileInput) videoFileInput.value = '';
+    selectedPostFile = null;
 }
 
-window.openPostModal = openPostModal;
-window.closePostModal = closePostModal;
-
-function setupFeedEvents() {
-    const btnCloseModal = document.getElementById('btn-close-modal');
-    const btnSubmitPost = document.getElementById('btn-submit-post');
-    const fileInput = document.getElementById('post-input-file');
-    const previewBox = document.getElementById('image-preview');
-    const addBtn = document.querySelector('.add-btn');
+function setupCreatePostEvents() {
     const fabBtn = document.getElementById('fab-post-btn');
+    const navPostBtn = document.getElementById('btn-open-post');
+    const btnBackPost = document.getElementById('btn-back-post');
+    const btnSubmitScreenPost = document.getElementById('btn-submit-screen-post');
+    const imageFileInput = document.getElementById('post-file-image');
+    const videoFileInput = document.getElementById('post-file-video');
+    const previewContainer = document.getElementById('post-screen-preview');
 
-    if (btnCloseModal) btnCloseModal.addEventListener('click', closePostModal);
-    if (addBtn) addBtn.addEventListener('click', openPostModal);
-    if (fabBtn) fabBtn.addEventListener('click', openPostModal);
+    // Mở màn hình khi bấm nút + hoặc nút Khoảnh khắc ở bottom nav
+    if (fabBtn) fabBtn.addEventListener('click', openCreatePostScreen);
+    if (navPostBtn) navPostBtn.addEventListener('click', openCreatePostScreen);
+    if (btnBackPost) btnBackPost.addEventListener('click', closeCreatePostScreen);
 
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    selectedImageBase64 = event.target.result;
-                    if (previewBox) {
-                        previewBox.innerHTML = `<img src="${selectedImageBase64}" style="max-width:100%; border-radius:12px;">`;
+    // Xử lý xem trước file (Ảnh hoặc Video)
+    function handleFileSelected(file) {
+        if (!file) return;
+        selectedPostFile = file;
+        const isVideo = file.type.startsWith('video/');
+        const fileUrl = URL.createObjectURL(file);
+
+        if (previewContainer) {
+            previewContainer.innerHTML = `
+                <div style="position:relative; margin-top: 10px;">
+                    ${isVideo 
+                        ? `<video src="${fileUrl}" controls style="width:100%; max-height:200px; border-radius:12px;"></video>` 
+                        : `<img src="${fileUrl}" style="width:100%; max-height:200px; object-fit:cover; border-radius:12px;">`
                     }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+                    <button id="btn-remove-preview" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+                </div>
+            `;
+
+            document.getElementById('btn-remove-preview').addEventListener('click', () => {
+                previewContainer.innerHTML = '';
+                selectedPostFile = null;
+                if (imageFileInput) imageFileInput.value = '';
+                if (videoFileInput) videoFileInput.value = '';
+            });
+        }
     }
 
-    if (btnSubmitPost) {
-        btnSubmitPost.addEventListener('click', async function() {
-            const textInput = document.getElementById('post-input-text');
-            const fileInputElem = document.getElementById('post-input-file');
-            const content = textInput ? textInput.value : '';
-            const file = fileInputElem && fileInputElem.files ? fileInputElem.files[0] : null;
+    if (imageFileInput) imageFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
+    if (videoFileInput) videoFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
 
-            if (!content && !selectedImageBase64) {
-                alert('Phương ơi, hãy gõ nội dung hoặc chọn một tấm ảnh nhé!');
+    // Đăng bài lên Firebase
+    if (btnSubmitScreenPost) {
+        btnSubmitScreenPost.addEventListener('click', async () => {
+            const textInputScreen = document.getElementById('post-screen-text');
+            const content = textInputScreen ? textInputScreen.value.trim() : '';
+
+            if (!content && !selectedPostFile) {
+                alert('Phương ơi, hãy gõ nội dung hoặc chọn một tấm ảnh/video nhé!');
                 return;
             }
 
-            // Gửi lên Cloud nếu có kết nối
-            await submitPostCloud(content, file);
+            btnSubmitScreenPost.innerText = "Đang đăng...";
+            btnSubmitScreenPost.disabled = true;
 
-            // Đóng popup
-            closePostModal();
+            try {
+                let mediaUrl = "";
+                let isVideo = false;
+
+                if (selectedPostFile) {
+                    isVideo = selectedPostFile.type.startsWith('video/');
+                    const folder = isVideo ? 'videos' : 'images';
+                    const storageRef = ref(storage, `${folder}/${Date.now()}_${selectedPostFile.name}`);
+                    await uploadBytes(storageRef, selectedPostFile);
+                    mediaUrl = await getDownloadURL(storageRef);
+                }
+
+                await addDoc(collection(db, "posts_demo"), {
+                    author: "Ouji",
+                    location: "Việt Nam 🇻🇳",
+                    content: content,
+                    mediaUrl: mediaUrl,
+                    isVideo: isVideo,
+                    createdAt: serverTimestamp()
+                });
+
+                alert("Đã đăng khoảnh khắc thành công! ✨");
+                closeCreatePostScreen();
+            } catch (error) {
+                console.error("Lỗi khi đăng bài:", error);
+                alert("Đăng bài thất bại: " + error.message);
+            } finally {
+                btnSubmitScreenPost.innerText = "Đăng";
+                btnSubmitScreenPost.disabled = false;
+            }
         });
     }
 }
 
 // ==========================================
-// 4. CHUYỂN TAB (NAVIGATION)
+// 4. POPUP CẢM XÚC TRÊN AVATAR
+// ==========================================
+
+function setupStatusModalEvents() {
+    const myAvatarWrapper = document.getElementById('my-avatar-wrapper');
+    const statusModal = document.getElementById('status-modal');
+    const btnCloseStatus = document.getElementById('btn-close-status');
+    const btnSaveStatus = document.getElementById('btn-save-status');
+    const inputUserStatus = document.getElementById('input-user-status');
+    const myStatusBubble = document.getElementById('my-status-bubble');
+    const emojiChips = document.querySelectorAll('.emoji-chip');
+
+    if (myAvatarWrapper) {
+        myAvatarWrapper.addEventListener('click', () => {
+            if (statusModal) statusModal.classList.add('active');
+        });
+    }
+
+    if (btnCloseStatus) {
+        btnCloseStatus.addEventListener('click', () => {
+            if (statusModal) statusModal.classList.remove('active');
+        });
+    }
+
+    emojiChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            if (inputUserStatus) inputUserStatus.value = chip.innerText;
+        });
+    });
+
+    if (btnSaveStatus) {
+        btnSaveStatus.addEventListener('click', () => {
+            const newStatus = inputUserStatus ? inputUserStatus.value.trim() : '';
+            if (newStatus && myStatusBubble) {
+                myStatusBubble.innerText = newStatus;
+                myStatusBubble.style.display = 'block';
+            }
+            if (statusModal) statusModal.classList.remove('active');
+            if (inputUserStatus) inputUserStatus.value = '';
+        });
+    }
+}
+
+// ==========================================
+// 5. CHUYỂN TAB (NAVIGATION)
 // ==========================================
 
 function setupNavigation() {
     const navItems = document.querySelectorAll('.bottom-nav .nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
-            if (this.id === 'btn-open-post') return;
+            if (this.id === 'btn-open-post') return; // Nút tạo bài mở màn hình riêng
             navItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
             const targetSectionId = this.getAttribute('data-target');
@@ -214,9 +300,56 @@ function setupNavigation() {
 }
 
 // ==========================================
-// 5. FIREBASE LOGIC
+// 6. FIREBASE REALTIME LISTENERS
 // ==========================================
 
+// Lắng nghe bài viết mới từ Firestore và hiển thị ra Feed
+function listenToPostsRealtime() {
+    const postsQuery = query(collection(db, "posts_demo"), orderBy("createdAt", "desc"));
+
+    onSnapshot(postsQuery, (snapshot) => {
+        const feedContainer = document.getElementById('feed-posts');
+        if (!feedContainer) return;
+
+        feedContainer.innerHTML = '';
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const postCard = document.createElement('div');
+            postCard.className = 'post-card';
+
+            let mediaHTML = '';
+            if (data.mediaUrl) {
+                if (data.isVideo) {
+                    mediaHTML = `<video src="${data.mediaUrl}" controls style="width:100%; max-height:250px; border-radius:12px; margin-top:8px;"></video>`;
+                } else {
+                    mediaHTML = `<img src="${data.mediaUrl}" alt="Ảnh bài viết" style="width:100%; max-height:250px; object-fit:cover; border-radius:12px; margin-top:8px;">`;
+                }
+            }
+
+            postCard.innerHTML = `
+                <div class="post-user">
+                    <div class="user-avatar">🙍‍♂️</div>
+                    <div class="user-meta">
+                        <span class="user-name">${data.author || 'Thành viên'}</span>
+                        <span class="post-time">${data.location || 'HIKARI'}</span>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <p class="post-text">${data.content || ''}</p>
+                    ${mediaHTML}
+                </div>
+                <div class="post-footer">
+                    <button class="btn-like">❤️ <span class="like-count">0</span></button>
+                    <button class="btn-comment">💬 <span class="comment-count">0</span></button>
+                </div>
+            `;
+            feedContainer.appendChild(postCard);
+        });
+    });
+}
+
+// Lắng nghe ảnh Khoảnh khắc cuộn ngang
 function listenToMomentsRealtime() {
     const momentsQuery = query(collection(db, "moments_demo"), orderBy("createdAt", "desc"));
 
@@ -240,6 +373,7 @@ function listenToMomentsRealtime() {
     });
 }
 
+// Upload khoảnh khắc nhanh
 function setupMomentUploadListener() {
     const momentFileInput = document.getElementById('moment-file-input');
     if (momentFileInput && !momentFileInput.dataset.hasListener) {
@@ -266,33 +400,8 @@ function setupMomentUploadListener() {
     }
 }
 
-async function submitPostCloud(content, file) {
-    if (!content && !file) return false;
-    try {
-        let imageUrl = "";
-        if (file) {
-            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            await uploadBytes(storageRef, file);
-            imageUrl = await getDownloadURL(storageRef);
-        }
-        await addDoc(collection(db, "posts_demo"), {
-            author: "Ouji",
-            location: "Việt Nam 🇻🇳",
-            content: content,
-            imageUrl: imageUrl,
-            createdAt: serverTimestamp()
-        });
-        console.log("Đã gửi bài lên Cloud thành công! ✨");
-        return true;              
-    } catch (error) {
-        console.error("Lỗi gửi bài lên Cloud:", error);
-        alert("Đăng bài thất bại: " + error.message);
-        return false;
-    }
-}
-
 // ==========================================
-// 6. KHỞI CHẠY TẤT CẢ KHI PAGE LOAD XONG
+// 7. KHỞI CHẠY TẤT CẢ KHI PAGE LOAD XONG
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -311,10 +420,12 @@ document.addEventListener("DOMContentLoaded", function() {
     updateProgressBar();
 
     // 3. Khởi tạo các sự kiện giao diện
-    setupFeedEvents();
+    setupCreatePostEvents();
+    setupStatusModalEvents();
     setupNavigation();
 
     // 4. Khởi tạo Firebase listeners
     setupMomentUploadListener();
     listenToMomentsRealtime();
+    listenToPostsRealtime();
 });

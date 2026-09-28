@@ -39,14 +39,16 @@
             </svg>
             <span class="notif-badge"></span>
         </button>
-        <div class="user-avatar">
-          <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Hikari" alt="Avatar" class="user-avatar" id="header-avatar">
-          <span class="online-status"></span>
+        <div class="user-profile-bar">
+          <div class="avatar-wrapper" id="my-avatar-wrapper" title="Bấm để đổi cảm xúc">
+          <div id="my-status-bubble" class="thought-bubble">📚 Đang học bài</div>
+          <img src="avatar.png" alt="Avatar của tôi" class="user-avatar-img">
+          </div>
         </div>
     </div>
   </header>
 
-  <button class="fab-add-btn" id="fab-post-btn" onclick="openPostModal()">
+  <button class="fab-add-btn" id="fab-post-btn">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round">
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -172,7 +174,7 @@
       <span class="nav-icon">🏠</span>
       <span class="nav-label">Trang chủ</span>
     </button>
-    <button type="button" class="nav-item" id="btn-open-post" onclick="openPostModal()">
+    <button type="button" class="nav-item" id="btn-open-post">
       <span class="nav-icon">📷</span>
       <span class="nav-label">Khoảnh khắc</span>
     </button>
@@ -182,22 +184,59 @@
     </button>
   </nav>
 
-  <div class="modal-overlay" id="post-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <span>🌸 Tạo khoảnh khắc mới</span>
-        <button id="btn-close-modal">❌</button>
-      </div>
-      <div class="modal-body">
-        <textarea id="post-input-text" placeholder="Chia sẻ gì với nhà chút đi nhé..."></textarea>
-        <div class="file-upload-wrapper">
-          <label for="post-input-file" class="file-label">📷 Chọn ảnh từ máy</label>
-          <input type="file" id="post-input-file" accept="image/*" style="display: none;">
+  <div id="create-post-screen" class="post-screen">
+    <!-- Header-->
+    <div class="post-screen-header">
+      <button id="btn-back-post" class="icon-btn">←</button>
+      <h3>Đăng bài mới</h3>
+      <button id="btn-submit-screen-post" class="submit-text-btn">Đăng</button>
+    </div>
+
+    <!--Body-->
+      <div class="post-screen-body">
+        <textarea id="post-screen-text" placeholder="Admin luôn ở đây..."></textarea>
+        <!--Preview ảnh/file chọn-->
+        <div id="post-screen-preview" class="image-preview-container"></div>
+        <!--Thanh icon đính kèm-->
+        <div class="attach-options">
+          <label class="attach-item">
+            <input type="file" id="post-file-image" accept="image/*" hidden>
+            <div class="attach-icon bg-orange">🖼️</div>
+            <span>Ảnh</span>
+          </label>
+          <label class="attach-item">
+            <input type="file" id="post-file-video" accept="video/*" hidden>
+            <div class="attach-icon bg-pink">🎥</div>
+            <span>Video</span>
+          </label>
         </div>
-        <div id="image-preview" class="image-preview-box"></div>
+
+        <div class="post-settings">
+          <div class="setting-row">
+            <div class="setting-left">🌸<span>Gửi tới</span></div>
+            <div class="setting-right">Nhóm HIKARI</div>
+          </div>        
+        </div>
       </div>
-      <div class="modal-footer">
-        <button id="btn-submit-post" class="btn-primary">Đăng bài</button>
+
+      <div class="lotus-footer-bg"></div>
+    </div>
+  </div>
+
+  <div id="status-modal" class="status-modal-overlay">
+    <div class="status-modal-content">
+      <h4>Bạn đang cảm thấy thế nào? 💭</h4>
+      <input type="text" id="input-user-status" placeholder="VD: Đang học bài 📚, Thèm trà sữa 🧋..." maxlength="30">
+      <div class="quick-emojis">
+        <span class="emoji-chip">😴 Buồn ngủ</span>
+        <span class="emoji-chip">🤒 Bị bệnh</span>
+        <span class="emoji-chip">📚 Đang học bài</span>
+        <span class="emoji-chip">🧋 Thèm trà sữa</span>
+        <span class="emoji-chip">🪷 Nhớ nhà</span>
+      </div>
+      <div class="status-modal-actions">
+        <button id="btn-close-status" class="btn-cancel">Hủy</button>
+        <button id="btn-save-status" class="btn-save">Cập nhật</button>
       </div>
     </div>
   </div>
