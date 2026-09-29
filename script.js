@@ -36,21 +36,25 @@ onAuthStateChanged(auth, (user) => {
     if(user) {
         //Đã đăng nhập -> Ẩn form
         if (loginOverlay) loginOverlay.style.display ='none';
+        document.body.classList.remove('login-locked');
         console.log("Đăng nhập thành công:", user.email);
     } else {
         //Chưa đăng nhập thành công -> Hiện form
         if (loginOverlay) loginOverlay.style.display ='flex';
+        document.body.classList.add('login-locked');
     }    
 });
 
 //Xử lý sự kiện khi bấm nút Đăng nhập
-document.addEventListener("DOMContentLoaded", () => {
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
+            const emailInput = document.getElementById('login-email');
+            const passInput = document.getElementById('login-pass');
             const errorMsg = document.getElementById('login-error-msg');
+
+            const email = emailInput ? emailInput.value.trim():'';
+            const pass = passInput ? passInput.value.trim():'';
 
             if (!email || !pass) {
                 errorMsg.innerText = "Vui lòng đăng nhập";
@@ -58,10 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             btnLogin.innerText = "Đang kiểm tra...";
             btnLogin.disabled = true;
+            if (errorMsg) errorMsg.innerText = "";
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                errorMsg.innerText = "";
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
                 errorMsg.innerText = "Tài khoản/mật khẩu không chính xác";
@@ -71,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
 
 // ==========================================
 // 1. ĐỒNG HỒ & MÚI GIỜ

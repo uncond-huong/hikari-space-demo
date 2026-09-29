@@ -759,7 +759,7 @@ body {
 /* ==========================================
    MÀN HÌNH ĐĂNG NHẬP (LOGIN OVERLAY)
    ========================================== */
-.login-overlay {
+.login {
     position: fixed;
     top: 0;
     left: 0;
@@ -772,6 +772,11 @@ body {
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
+}
+
+body.login-locked {
+  overflow: hidden;
+  height: 100vh;
 }
 
 .login-card {
