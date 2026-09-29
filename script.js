@@ -167,7 +167,6 @@ function setupLoginEvent() {
             if (!email || !pass) {
                 const emptyMsg = "Vui lòng nhập đầy đủ Email và Mật khẩu!";
                 if (errorMsg) errorMsg.innerText = emptyMsg;
-                else showToast(emptyMsg, "⚠️");
                 return;
             }
 
@@ -187,7 +186,6 @@ function setupLoginEvent() {
                 }
                 
                 if (errorMsg) errorMsg.innerText = msg;
-                else showToast(msg, "❌");
             } finally {
                 btnLogin.innerText = "Đăng nhập";
                 btnLogin.disabled = false;
