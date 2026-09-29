@@ -12,7 +12,7 @@ import {
     reauthenticateWithCredential,
     addDoc, 
     doc, 
-    setDoc, 
+    setDoc, updateDoc, arrayUnion, arrayRemove,
     onSnapshot, 
     serverTimestamp, 
     query, 
@@ -22,6 +22,9 @@ import {
 
 // Biến lưu tên hiển thị của người dùng đang đăng nhập
 let currentUserName = "Thành viên";
+let currentAvatarUrl = "";
+let activeCommentPostId = null;
+let commentUnsubscribe = null;
 
 // ==========================================
 // THÔNG TIN CLOUDINARY
@@ -75,7 +78,7 @@ function getCustomToastInfo() {
     const email = (user.email || "").toLowerCase();
 
     // 1. Dành cho Hường (huongsoft@hikari.com)
-    if (email.includes("huong")) {
+    if (email.includes("soft")) {
         return { 
             msg: "Ui, cảm ơn công chúa đã chia sẻ nhen... 💖", 
             icon: "🌸" 
@@ -138,6 +141,10 @@ onAuthStateChanged(auth, (user) => {
             }
 
             // Cập nhật Avatar
+            if (docSnap.exists() && docSnap.data().avatarUrl) {
+                currentAvatarUrl = docSnap.data().avatarUrl;
+                if (myAvatarImg) myAvatarImg.src = currentAvatarUrl;
+            }
             if (docSnap.exists() && docSnap.data().avatarUrl && myAvatarImg) {
                 myAvatarImg.src = docSnap.data().avatarUrl;
             }
@@ -179,12 +186,6 @@ function setupLoginEvent() {
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
                 let msg = "Tài khoản hoặc mật khẩu không chính xác!";
-                if (error.code === 'auth/operation-not-allowed') {
-                    msg = "Chưa BẬT Email/Password trong Firebase Console!";
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    msg = "Tên miền chưa được cấp phép trong Firebase Auth!";
-                }
-                
                 if (errorMsg) errorMsg.innerText = msg;
             } finally {
                 btnLogin.innerText = "Đăng nhập";
@@ -389,6 +390,7 @@ function setupCreatePostEvents() {
                 // Lưu vào Firestore collection "posts_test"
                 await addDoc(collection(db, "posts_test"), {
                     author: getAuthorName(),
+                    authorAvatarUrl: currentAvatarUrl,
                     location: "Việt Nam 🇻🇳",
                     content: content,
                     mediaUrl: mediaUrl,
@@ -664,6 +666,10 @@ function listenToPostsRealtime() {
             const postCard = document.createElement('div');
             postCard.className = 'post-card';
 
+            const defaultAvatar = "avatar.jpg";
+            const avatarUrl = data.authorAvatarUrl || defaultAvatar;
+
+
             let mediaHTML = '';
             if (data.mediaUrl) {
                 if (data.isVideo) {
@@ -675,7 +681,7 @@ function listenToPostsRealtime() {
 
             postCard.innerHTML = `
                 <div class="post-user">
-                    <div class="user-avatar">🙍‍♂️</div>
+                    <img src="${avatarUrl}" class="post-avatar-img" alt="Avatar">
                     <div class="user-meta">
                         <span class="user-name">${data.author || 'Thành viên'}</span>
                         <span class="post-time">${data.location || 'HIKARI'}</span>
@@ -757,7 +763,189 @@ function setupMomentUploadListener() {
 }
 
 // ==========================================
-// 7. KHỞI CHẠY TẤT CẢ KHI PAGE LOAD XONG
+// 7. THẢ TIM & BÌNH LUẬN LOGIC
+// ==========================================
+
+// Hàm Thả / Bỏ tim bài viết
+async function toggleLikePost(postId, likesArray = []) {
+    const user = auth.currentUser;
+    if (!user) {
+        showToast("Vui lòng đăng nhập để thả tim!", "⚠️");
+        return;
+    }
+
+    const postRef = doc(db, "posts_test", postId);
+    const isLiked = likesArray.includes(user.uid);
+
+    try {
+        if (isLiked) {
+            await updateDoc(postRef, { likes: arrayRemove(user.uid) });
+        } else {
+            await updateDoc(postRef, { likes: arrayUnion(user.uid) });
+        }
+    } catch (error) {
+        console.error("Lỗi thả tim:", error);
+        showToast("Thao tác thất bại: " + error.message, "❌");
+    }
+}
+
+// Mở Popup Bình luận bài viết
+function openCommentModal(postId) {
+    activeCommentPostId = postId;
+    const modal = document.getElementById('comment-modal');
+    if (modal) modal.classList.add('active');
+
+    const commentList = document.getElementById('comment-list');
+    if (commentList) commentList.innerHTML = '<p style="text-align:center; color:#888; font-size:12px;">Đang tải bình luận...</p>';
+
+    // Hủy listener cũ nếu có
+    if (commentUnsubscribe) commentUnsubscribe();
+
+    // Lắng nghe Realtime bình luận của bài viết
+    const commentsRef = query(collection(db, "posts_test", postId, "comments"), orderBy("createdAt", "asc"));
+    commentUnsubscribe = onSnapshot(commentsRef, (snapshot) => {
+        if (!commentList) return;
+        commentList.innerHTML = '';
+
+        if (snapshot.empty) {
+            commentList.innerHTML = '<p style="text-align:center; color:#888; font-size:12px;">Chưa có bình luận nào. Hãy là người đầu tiên!</p>';
+            return;
+        }
+
+        snapshot.forEach(docSnap => {
+            const cData = docSnap.data();
+            const avatar = cData.authorAvatarUrl || "avatar.png";
+            const item = document.createElement('div');
+            item.className = 'comment-item-box';
+            item.innerHTML = `
+                <img src="${avatar}" class="comment-user-avatar" alt="Avatar">
+                <div class="comment-content-box">
+                    <span class="comment-author-name">${cData.author || 'Thành viên'}</span>
+                    <span class="comment-text-body">${cData.text || ''}</span>
+                </div>
+            `;
+            commentList.appendChild(item);
+        });
+
+        // Cuộn xuống cuối
+        commentList.scrollTop = commentList.scrollHeight;
+    });
+}
+
+// Cài đặt sự kiện nút Gửi bình luận & Đóng Popup
+function setupCommentEvents() {
+    const btnClose = document.getElementById('btn-close-comment');
+    const btnSend = document.getElementById('btn-send-comment');
+    const inputComment = document.getElementById('input-comment-text');
+    const modal = document.getElementById('comment-modal');
+
+    if (btnClose) {
+        btnClose.addEventListener('click', () => {
+            if (modal) modal.classList.remove('active');
+            if (commentUnsubscribe) commentUnsubscribe();
+            activeCommentPostId = null;
+        });
+    }
+
+    if (btnSend && inputComment) {
+        btnSend.addEventListener('click', async () => {
+            const text = inputComment.value.trim();
+            const user = auth.currentUser;
+            if (!text || !activeCommentPostId || !user) return;
+
+            btnSend.disabled = true;
+            try {
+                await addDoc(collection(db, "posts_test", activeCommentPostId, "comments"), {
+                    author: getAuthorName(),
+                    authorAvatarUrl: currentAvatarUrl || "avatar.png",
+                    text: text,
+                    createdAt: serverTimestamp()
+                });
+                inputComment.value = '';
+            } catch (error) {
+                console.error("Lỗi gửi bình luận:", error);
+                showToast("Gửi thất bại: " + error.message, "❌");
+            } finally {
+                btnSend.disabled = false;
+            }
+        });
+    }
+}
+
+// 2. Cập nhật hàm listenToPostsRealtime() để hiển thị lượt Tim & Bình luận
+function listenToPostsRealtime() {
+    const postsQuery = query(collection(db, "posts_test"), orderBy("createdAt", "desc"));
+
+    onSnapshot(postsQuery, (snapshot) => {
+        const feedContainer = document.getElementById('feed-posts');
+        if (!feedContainer) return;
+
+        feedContainer.innerHTML = '';
+        const currentUser = auth.currentUser;
+
+        snapshot.forEach(docSnap => {
+            const postId = docSnap.id;
+            const data = docSnap.data();
+            const postCard = document.createElement('div');
+            postCard.className = 'post-card';
+
+            const defaultAvatar = "avatar.png"; 
+            const avatarUrl = data.authorAvatarUrl || defaultAvatar;
+
+            // Xử lý Lượt thả tim
+            const likesArray = data.likes || [];
+            const likeCount = likesArray.length;
+            const isLikedByMe = currentUser && likesArray.includes(currentUser.uid);
+
+            let mediaHTML = '';
+            if (data.mediaUrl) {
+                if (data.isVideo) {
+                    mediaHTML = `<video src="${data.mediaUrl}" controls style="width:100%; max-height:250px; border-radius:12px; margin-top:8px;"></video>`;
+                } else {
+                    mediaHTML = `<img src="${data.mediaUrl}" alt="Ảnh bài viết" style="width:100%; max-height:250px; object-fit:cover; border-radius:12px; margin-top:8px;">`;
+                }
+            }
+
+            postCard.innerHTML = `
+                <div class="post-user">
+                    <img src="${avatarUrl}" class="post-avatar-img" alt="Avatar">
+                    <div class="user-meta">
+                        <span class="user-name">${data.author || 'Thành viên'}</span>
+                        <span class="post-time">${data.location || 'HIKARI'}</span>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <p class="post-text">${data.content || ''}</p>
+                    ${mediaHTML}
+                </div>
+                <div class="post-footer">
+                    <button class="btn-like ${isLikedByMe ? 'liked' : ''}" data-id="${postId}">
+                        ${isLikedByMe ? '❤️' : '🤍'} <span class="like-count">${likeCount}</span>
+                    </button>
+                    <button class="btn-comment" data-id="${postId}">
+                        💬 <span class="comment-count">Bình luận</span>
+                    </button>
+                </div>
+            `;
+
+            // Gán sự kiện cho Nút Thả tim & Nút Bình luận
+            const btnLike = postCard.querySelector('.btn-like');
+            const btnComment = postCard.querySelector('.btn-comment');
+
+            if (btnLike) {
+                btnLike.addEventListener('click', () => toggleLikePost(postId, likesArray));
+            }
+            if (btnComment) {
+                btnComment.addEventListener('click', () => openCommentModal(postId));
+            }
+
+            feedContainer.appendChild(postCard);
+        });
+    });
+}
+
+// ==========================================
+// 8. KHỞI CHẠY TẤT CẢ KHI PAGE LOAD XONG
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", function() {

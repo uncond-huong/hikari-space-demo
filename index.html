@@ -275,6 +275,25 @@
       </div>
     </div>
 
+    <!-- POPUP BÌNH LUẬN BÀI VIẾT -->
+<div id="comment-modal" class="status-modal-overlay">
+  <div class="status-modal-content" style="max-width: 360px; max-height: 80vh; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h4 style="margin: 0;">💬 Bình luận</h4>
+      <button id="btn-close-comment" class="btn-cancel" style="font-size: 18px; font-weight: bold;">✕</button>
+    </div>
+    
+    <!-- Danh sách bình luận cuộn được -->
+    <div id="comment-list" style="flex: 1; overflow-y: auto; max-height: 260px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
+    
+    <!-- Ô nhập bình luận -->
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="input-comment-text" placeholder="Viết bình luận..." style="flex: 1; padding: 10px; border: 1.5px solid #FFD1DC; border-radius: 10px; outline: none; font-size: 13px;">
+      <button id="btn-send-comment" class="btn-save" style="white-space: nowrap;">Gửi</button>
+    </div>
+  </div>
+</div>
+
     <!-- TOAST NOTIFICATION KIỂU FACEBOOK -->
     <div id="toast-notification" class="fb-toast">
       <span id="toast-icon">✨</span>
