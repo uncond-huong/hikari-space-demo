@@ -2,15 +2,7 @@
 // 0. IMPORT FIREBASE
 // ==========================================
 import { 
-    db,  
-    collection, 
-    addDoc,
-    doc,
-    setDoc,
-    onSnapshot, 
-    serverTimestamp, 
-    query, 
-    orderBy
+    db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy
 } from "./firebase.js";
 
 // ==========================================
@@ -37,6 +29,49 @@ async function uploadToCloudinary(file) {
         throw new Error(data.error?.message || "Lỗi tải media lên Cloudinary!");
     }
 }
+
+//Đăng nhập
+onAuthStateChanged(auth, (user) => {
+    const loginOverlay = document.getElementById('login-overlay');
+    if(user) {
+        //Đã đăng nhập -> Ẩn form
+        if (loginOverlay) loginOverlay.style.display ='none';
+        console.log("Đăng nhập thành công:", user.email);
+    } else {
+        //Chưa đăng nhập thành công -> Hiện form
+        if (loginOverlay) loginOverlay.style.display ='flex';
+    }    
+});
+
+//Xử lý sự kiện khi bấm nút Đăng nhập
+document.addEventListener("DOMContentLoaded", () => {
+    const btnLogin = document.getElementById('btn-login-submit');
+    if (btnLogin) {
+        btnLogin.addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            const errorMsg = document.getElementById('login-error-msg');
+
+            if (!email || !pass) {
+                errorMsg.innerText = "Vui lòng đăng nhập";
+                return;
+            }
+            btnLogin.innerText = "Đang kiểm tra...";
+            btnLogin.disabled = true;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                errorMsg.innerText = "";
+            } catch (error) {
+                console.error("Lỗi đăng nhập:", error);
+                errorMsg.innerText = "Tài khoản/mật khẩu không chính xác";
+            } finally {
+                btnLogin.innerText = "Đăng nhập";
+                btnLogin.disabled = false;
+            }
+        });
+    }
+});
 
 // ==========================================
 // 1. ĐỒNG HỒ & MÚI GIỜ

@@ -754,3 +754,88 @@ body {
 
 .btn-cancel { background: none; border: none; color: #888; cursor: pointer; }
 .btn-save { background: #FF7B9C; color: white; border: none; padding: 6px 14px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+
+/* ==========================================
+   MÀN HÌNH ĐĂNG NHẬP (LOGIN OVERLAY)
+   ========================================== */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #FFF9F5;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.login-card {
+    background: #FFFFFF;
+    padding: 30px 24px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+}
+
+.login-title {
+    color: #4A4A4A;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    color: #8C8C8C;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #EAEAEA;
+    border-radius: 10px;
+    outline: none;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.login-input:focus {
+    border-color: #FF9EAA;
+}
+
+#login-pass {
+    margin-bottom: 16px;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: #FF9EAA;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-login:hover {
+    background: #FF8595;
+}
+
+.login-error-msg {
+    color: #FF5A5A;
+    font-size: 12px;
+    margin-top: 12px;
+    min-height: 16px;
+}
