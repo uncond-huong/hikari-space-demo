@@ -313,7 +313,7 @@ function setupStatusModalEvents() {
         });
     }
 
-    onSnapshot(doc(db, "user_status", CURRENT_USER_ID), (docSnap) => {
+    onSnapshot(doc(db, "user_status_test", CURRENT_USER_ID), (docSnap) => {
         if (docSnap.exists() && docSnap.data().status && myStatusBubble) {
             myStatusBubble.innerText = docSnap.data().status;
             myStatusBubble.style.display = 'block';
