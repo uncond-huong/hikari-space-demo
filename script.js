@@ -409,6 +409,15 @@ function listenToMomentsRealtime() {
                 momentsList.appendChild(item);
             }            
         });
+
+        const addBtn = document.createElement('div');
+        addBtn.className = 'moment-add-card';
+        addBtn.onclick = () => document.getElementById('moment-file-input').click();
+        addBtn.innerHTML = `
+            <div class="plus-icon">+</div>
+            <span>Thêm ảnh</span>
+        `;
+        momentsList.appendChild(addBtn);
     });
 }
 
