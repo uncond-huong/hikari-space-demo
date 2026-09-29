@@ -12,7 +12,10 @@ import {
     reauthenticateWithCredential,
     addDoc, 
     doc, 
-    setDoc, updateDoc, arrayUnion, arrayRemove,
+    setDoc, 
+    updateDoc, 
+    arrayUnion, 
+    arrayRemove,
     onSnapshot, 
     serverTimestamp, 
     query, 
@@ -20,7 +23,7 @@ import {
     collection
 } from "./firebase.js";
 
-// Biến lưu tên hiển thị của người dùng đang đăng nhập
+// Biến toàn cục
 let currentUserName = "Thành viên";
 let currentAvatarUrl = "";
 let activeCommentPostId = null;
@@ -111,14 +114,11 @@ function getAuthorName() {
 // XÁC THỰC NGƯỜI DÙNG (FIREBASE AUTH)
 // ==========================================
 
-// Lắng nghe trạng thái đăng nhập & Cập nhật tên/avatar Realtime
 onAuthStateChanged(auth, (user) => {
     const loginOverlay = document.getElementById('login-overlay');
     if (user) {
-        // Đã đăng nhập -> Ẩn form & Mở khóa cuộn trang
         if (loginOverlay) loginOverlay.style.display = 'none';
         document.body.classList.remove('login-locked');
-        console.log("Đã đăng nhập thành công:", user.email);
 
         // Lắng nghe Realtime Tên hiển thị & Avatar từ Firestore "users"
         onSnapshot(doc(db, "users", user.uid), (docSnap) => {
@@ -132,37 +132,29 @@ onAuthStateChanged(auth, (user) => {
                 currentUserName = user.email ? user.email.split('@')[0] : "Thành viên";
             }
 
-            // Gán tên lên góc chào Header
             if (userNameElem) userNameElem.innerText = currentUserName;
 
-            // Điền sẵn tên vào ô nhập trong Popup nếu đang rỗng
             if (inputDisplayName && !inputDisplayName.value) {
                 inputDisplayName.value = currentUserName;
             }
 
-            // Cập nhật Avatar
             if (docSnap.exists() && docSnap.data().avatarUrl) {
                 currentAvatarUrl = docSnap.data().avatarUrl;
                 if (myAvatarImg) myAvatarImg.src = currentAvatarUrl;
             }
-            if (docSnap.exists() && docSnap.data().avatarUrl && myAvatarImg) {
-                myAvatarImg.src = docSnap.data().avatarUrl;
-            }
         });
 
     } else {
-        // Chưa đăng nhập -> Hiện form & Khóa cuộn trang
         if (loginOverlay) loginOverlay.style.display = 'flex';
         document.body.classList.add('login-locked');
     }    
 });
 
-// Xử lý sự kiện bấm nút Đăng nhập
 function setupLoginEvent() {
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.addEventListener('click', async (e) => {
-            if (e) e.preventDefault(); // Chặn reload trang ngầm
+            if (e) e.preventDefault();
 
             const emailInput = document.getElementById('login-email');
             const passInput = document.getElementById('login-pass');
@@ -172,8 +164,7 @@ function setupLoginEvent() {
             const pass = passInput ? passInput.value.trim() : '';
 
             if (!email || !pass) {
-                const emptyMsg = "Vui lòng nhập đầy đủ Email và Mật khẩu!";
-                if (errorMsg) errorMsg.innerText = emptyMsg;
+                if (errorMsg) errorMsg.innerText = "Vui lòng nhập đầy đủ Email và Mật khẩu!";
                 return;
             }
 
@@ -185,8 +176,7 @@ function setupLoginEvent() {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
-                let msg = "Tài khoản hoặc mật khẩu không chính xác!";
-                if (errorMsg) errorMsg.innerText = msg;
+                if (errorMsg) errorMsg.innerText = "Tài khoản hoặc mật khẩu không chính xác!";
             } finally {
                 btnLogin.innerText = "Đăng nhập";
                 btnLogin.disabled = false;
@@ -275,8 +265,8 @@ function updateClockWidget(prefix, timeZone) {
 // ==========================================
 
 function updateProgressBar() {
-    const startDate = new Date(2026, 8, 9).getTime(); // Tháng 9 (Index 8)
-    const endDate = new Date(2026, 11, 31).getTime(); // Tháng 12 (Index 11)
+    const startDate = new Date(2026, 8, 9).getTime(); 
+    const endDate = new Date(2026, 11, 31).getTime(); 
     const now = new Date().getTime();
 
     const totalDuration = endDate - startDate;
@@ -364,7 +354,6 @@ function setupCreatePostEvents() {
     if (imageFileInput) imageFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
     if (videoFileInput) videoFileInput.addEventListener('change', (e) => handleFileSelected(e.target.files[0]));
 
-    // Đăng bài với Cloudinary & Firestore
     if (btnSubmitScreenPost) {
         btnSubmitScreenPost.addEventListener('click', async () => {
             const textInputScreen = document.getElementById('post-screen-text');
@@ -387,7 +376,6 @@ function setupCreatePostEvents() {
                     mediaUrl = await uploadToCloudinary(selectedPostFile);
                 }
 
-                // Lưu vào Firestore collection "posts_test"
                 await addDoc(collection(db, "posts_test"), {
                     author: getAuthorName(),
                     authorAvatarUrl: currentAvatarUrl,
@@ -395,10 +383,10 @@ function setupCreatePostEvents() {
                     content: content,
                     mediaUrl: mediaUrl,
                     isVideo: isVideo,
+                    likes: [],
                     createdAt: serverTimestamp()
                 });
 
-                // Hiện Toast thông báo cá nhân hóa
                 const toastInfo = getCustomToastInfo();
                 showToast(toastInfo.msg, toastInfo.icon);
 
@@ -460,7 +448,6 @@ function setupStatusModalEvents() {
             btnSaveStatus.disabled = true;
 
             try {
-                // 1. Lưu Tên hiển thị mới vào Firestore
                 if (newName) {
                     await setDoc(doc(db, "users", currentUser.uid), {
                         displayName: newName,
@@ -470,7 +457,6 @@ function setupStatusModalEvents() {
                     currentUserName = newName;
                 }
 
-                // 2. Lưu Cảm xúc
                 if (newStatus) {
                     await setDoc(doc(db, "user_status_test", CURRENT_USER_ID), {
                         status: newStatus,
@@ -499,7 +485,6 @@ function setupStatusModalEvents() {
     });
 }
 
-// Xử lý đổi Avatar
 function setupAvatarEvents() {
     const btnChangeAvatar = document.getElementById('btn-trigger-change-avatar');
     const avatarFileInput = document.getElementById('avatar-file-input');
@@ -526,7 +511,6 @@ function setupAvatarEvents() {
 
                 const avatarUrl = await uploadToCloudinary(file);
 
-                // Lưu vào Firestore collection "users"
                 await setDoc(doc(db, "users", currentUser.uid), {
                     avatarUrl: avatarUrl,
                     email: currentUser.email,
@@ -549,7 +533,6 @@ function setupAvatarEvents() {
     }
 }
 
-// Xử lý Đổi Mật Khẩu
 function setupChangePasswordEvents() {
     const modal = document.getElementById('change-pass-modal');
     const btnClose = document.getElementById('btn-close-pass-modal');
@@ -649,57 +632,8 @@ function setupNavigation() {
 }
 
 // ==========================================
-// 6. FIREBASE REALTIME LISTENERS
+// 6. NHẬT KÝ KHOẢNH KHẮC REALTIME
 // ==========================================
-
-function listenToPostsRealtime() {
-    const postsQuery = query(collection(db, "posts_test"), orderBy("createdAt", "desc"));
-
-    onSnapshot(postsQuery, (snapshot) => {
-        const feedContainer = document.getElementById('feed-posts');
-        if (!feedContainer) return;
-
-        feedContainer.innerHTML = '';
-
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const postCard = document.createElement('div');
-            postCard.className = 'post-card';
-
-            const defaultAvatar = "avatar.jpg";
-            const avatarUrl = data.authorAvatarUrl || defaultAvatar;
-
-
-            let mediaHTML = '';
-            if (data.mediaUrl) {
-                if (data.isVideo) {
-                    mediaHTML = `<video src="${data.mediaUrl}" controls style="width:100%; max-height:250px; border-radius:12px; margin-top:8px;"></video>`;
-                } else {
-                    mediaHTML = `<img src="${data.mediaUrl}" alt="Ảnh bài viết" style="width:100%; max-height:250px; object-fit:cover; border-radius:12px; margin-top:8px;">`;
-                }
-            }
-
-            postCard.innerHTML = `
-                <div class="post-user">
-                    <img src="${avatarUrl}" class="post-avatar-img" alt="Avatar">
-                    <div class="user-meta">
-                        <span class="user-name">${data.author || 'Thành viên'}</span>
-                        <span class="post-time">${data.location || 'HIKARI'}</span>
-                    </div>
-                </div>
-                <div class="post-body">
-                    <p class="post-text">${data.content || ''}</p>
-                    ${mediaHTML}
-                </div>
-                <div class="post-footer">
-                    <button class="btn-like">❤️ <span class="like-count">0</span></button>
-                    <button class="btn-comment">💬 <span class="comment-count">0</span></button>
-                </div>
-            `;
-            feedContainer.appendChild(postCard);
-        });
-    });
-}
 
 function listenToMomentsRealtime() {
     const momentsQuery = query(collection(db, "moments_test"), orderBy("createdAt", "desc"));
@@ -710,9 +644,8 @@ function listenToMomentsRealtime() {
 
         momentsList.innerHTML = '';
 
-        // 1. Vẽ tất cả ảnh khoảnh khắc đã đăng ra trước (bên trái)
-        snapshot.forEach(doc => {
-            const data = doc.data();
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
             if (data.imageUrl) {
                 const item = document.createElement('div');
                 item.className = 'moment-item';
@@ -721,7 +654,6 @@ function listenToMomentsRealtime() {
             }            
         });
 
-        // 2. Vẽ DUY NHẤT 1 nút "+ Thêm ảnh" ở cuối (bên phải)
         const addBtn = document.createElement('div');
         addBtn.className = 'moment-add-card';
         addBtn.onclick = () => document.getElementById('moment-file-input').click();
@@ -733,7 +665,6 @@ function listenToMomentsRealtime() {
     });
 }
 
-// Upload khoảnh khắc nhanh bằng Cloudinary
 function setupMomentUploadListener() {
     const momentFileInput = document.getElementById('moment-file-input');
     if (momentFileInput && !momentFileInput.dataset.hasListener) {
@@ -749,7 +680,6 @@ function setupMomentUploadListener() {
                     createdAt: serverTimestamp()
                 });
 
-                // Hiện Toast thông báo cá nhân hóa
                 const toastInfo = getCustomToastInfo();
                 showToast(toastInfo.msg, toastInfo.icon);
 
@@ -763,10 +693,9 @@ function setupMomentUploadListener() {
 }
 
 // ==========================================
-// 7. THẢ TIM & BÌNH LUẬN LOGIC
+// 7. FEED BÀI VIẾT, THẢ TIM & BÌNH LUẬN
 // ==========================================
 
-// Hàm Thả / Bỏ tim bài viết
 async function toggleLikePost(postId, likesArray = []) {
     const user = auth.currentUser;
     if (!user) {
@@ -789,7 +718,6 @@ async function toggleLikePost(postId, likesArray = []) {
     }
 }
 
-// Mở Popup Bình luận bài viết
 function openCommentModal(postId) {
     activeCommentPostId = postId;
     const modal = document.getElementById('comment-modal');
@@ -798,10 +726,8 @@ function openCommentModal(postId) {
     const commentList = document.getElementById('comment-list');
     if (commentList) commentList.innerHTML = '<p style="text-align:center; color:#888; font-size:12px;">Đang tải bình luận...</p>';
 
-    // Hủy listener cũ nếu có
     if (commentUnsubscribe) commentUnsubscribe();
 
-    // Lắng nghe Realtime bình luận của bài viết
     const commentsRef = query(collection(db, "posts_test", postId, "comments"), orderBy("createdAt", "asc"));
     commentUnsubscribe = onSnapshot(commentsRef, (snapshot) => {
         if (!commentList) return;
@@ -814,7 +740,7 @@ function openCommentModal(postId) {
 
         snapshot.forEach(docSnap => {
             const cData = docSnap.data();
-            const avatar = cData.authorAvatarUrl || "avatar.png";
+            const avatar = cData.authorAvatarUrl || "avatar.jpg";
             const item = document.createElement('div');
             item.className = 'comment-item-box';
             item.innerHTML = `
@@ -827,12 +753,10 @@ function openCommentModal(postId) {
             commentList.appendChild(item);
         });
 
-        // Cuộn xuống cuối
         commentList.scrollTop = commentList.scrollHeight;
     });
 }
 
-// Cài đặt sự kiện nút Gửi bình luận & Đóng Popup
 function setupCommentEvents() {
     const btnClose = document.getElementById('btn-close-comment');
     const btnSend = document.getElementById('btn-send-comment');
@@ -857,7 +781,7 @@ function setupCommentEvents() {
             try {
                 await addDoc(collection(db, "posts_test", activeCommentPostId, "comments"), {
                     author: getAuthorName(),
-                    authorAvatarUrl: currentAvatarUrl || "avatar.png",
+                    authorAvatarUrl: currentAvatarUrl || "avatar.jpg",
                     text: text,
                     createdAt: serverTimestamp()
                 });
@@ -872,7 +796,6 @@ function setupCommentEvents() {
     }
 }
 
-// 2. Cập nhật hàm listenToPostsRealtime() để hiển thị lượt Tim & Bình luận
 function listenToPostsRealtime() {
     const postsQuery = query(collection(db, "posts_test"), orderBy("createdAt", "desc"));
 
@@ -889,10 +812,9 @@ function listenToPostsRealtime() {
             const postCard = document.createElement('div');
             postCard.className = 'post-card';
 
-            const defaultAvatar = "avatar.png"; 
+            const defaultAvatar = "avatar.jpg"; 
             const avatarUrl = data.authorAvatarUrl || defaultAvatar;
 
-            // Xử lý Lượt thả tim
             const likesArray = data.likes || [];
             const likeCount = likesArray.length;
             const isLikedByMe = currentUser && likesArray.includes(currentUser.uid);
@@ -928,7 +850,6 @@ function listenToPostsRealtime() {
                 </div>
             `;
 
-            // Gán sự kiện cho Nút Thả tim & Nút Bình luận
             const btnLike = postCard.querySelector('.btn-like');
             const btnComment = postCard.querySelector('.btn-comment');
 
@@ -966,6 +887,7 @@ document.addEventListener("DOMContentLoaded", function() {
     setupStatusModalEvents();
     setupAvatarEvents();
     setupChangePasswordEvents();
+    setupCommentEvents(); // <--- Đã thêm kích hoạt sự kiện Bình luận!
     setupNavigation();
 
     setupMomentUploadListener();
