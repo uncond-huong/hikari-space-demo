@@ -394,11 +394,7 @@ function listenToMomentsRealtime() {
         const momentsList = document.getElementById('moments-list');
         if (!momentsList) return;
 
-        momentsList.innerHTML = `
-          <div <div class="moment-add-card" onclick="document.getElementById('moment-file-input').click()">
-            <div class="plus-icon">+</div>
-            <span>Thêm ảnh</span>
-          </div> `;
+        momentsList.innerHTML = '';
 
         snapshot.forEach(doc => {
             const data = doc.data();
