@@ -1,5 +1,5 @@
 // ==========================================
-// 0. IMPORT FIREBASE (ĐÃ BỎ FIREBASE STORAGE)
+// 0. IMPORT FIREBASE
 // ==========================================
 import { 
     db,  
@@ -25,7 +25,7 @@ async function uploadToCloudinary(file) {
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
 
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, {
         method: "POST",
         body: formData
     });
