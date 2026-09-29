@@ -2,14 +2,32 @@
 // 0. IMPORT FIREBASE
 // ==========================================
 import { 
-    db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy
+    db, 
+    auth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged, 
+    updatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    addDoc, 
+    doc, 
+    setDoc, 
+    onSnapshot, 
+    serverTimestamp, 
+    query, 
+    orderBy,
+    collection
 } from "./firebase.js";
 
+// Biến lưu tên hiển thị của người dùng đang đăng nhập
+let currentUserName = "Thành viên";
+
 // ==========================================
-// THÔNG TIN CLOUDINARY (THAY CHO FIREBASE STORAGE)
+// THÔNG TIN CLOUDINARY
 // ==========================================
 const CLOUD_NAME = "zwyvvrqi"; 
-const UPLOAD_PRESET = "hikari-preset"; // Ví dụ: ml_default hoặc hikari_preset
+const UPLOAD_PRESET = "hikari-preset";
 
 async function uploadToCloudinary(file) {
     const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
@@ -30,36 +48,129 @@ async function uploadToCloudinary(file) {
     }
 }
 
-//Đăng nhập
+// ==========================================
+// HÀM HIỂN THỊ TOAST THÔNG BÁO (KIỂU FACEBOOK)
+// ==========================================
+function showToast(message, icon = "✨") {
+    const toast = document.getElementById('toast-notification');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+    if (!toast || !toastMsg) return;
+
+    toastMsg.innerText = message;
+    if (toastIcon) toastIcon.innerText = icon;
+
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2800);
+}
+
+// Tự động chọn câu thông báo cá nhân hóa theo tài khoản
+function getCustomToastInfo() {
+    const user = auth.currentUser;
+    if (!user) return { msg: "Thao tác thành công! ✨", icon: "✨" };
+
+    const email = (user.email || "").toLowerCase();
+
+    // 1. Dành cho Hường (huongsoft@hikari.com)
+    if (email.includes("huong")) {
+        return { 
+            msg: "Ui, cảm ơn công chúa đã chia sẻ nhen... 💖", 
+            icon: "🌸" 
+        };
+    }
+
+    // 2. Dành cho Phương (phuong@hikari.com)
+    if (email.includes("phuong")) {
+        return { 
+            msg: "Đã góp phần làm nàng ấy vui! ✨", 
+            icon: "🪷" 
+        };
+    }
+
+    // 3. Dành cho Khách mời (guest@hikari.com hoặc khác)
+    return { 
+        msg: "Cảm ơn bạn đã kết nối với chúng tôi! 🌿", 
+        icon: "💌" 
+    };
+}
+
+// Lấy tên tác giả đăng bài động từ tài khoản
+function getAuthorName() {
+    const user = auth.currentUser;
+    if (!user) return "Thành viên";
+    return currentUserName || (user.email ? user.email.split('@')[0] : "Thành viên");
+}
+
+// ==========================================
+// XÁC THỰC NGƯỜI DÙNG (FIREBASE AUTH)
+// ==========================================
+
+// Lắng nghe trạng thái đăng nhập & Cập nhật tên/avatar Realtime
 onAuthStateChanged(auth, (user) => {
     const loginOverlay = document.getElementById('login-overlay');
-    if(user) {
-        //Đã đăng nhập -> Ẩn form
-        if (loginOverlay) loginOverlay.style.display ='none';
+    if (user) {
+        // Đã đăng nhập -> Ẩn form & Mở khóa cuộn trang
+        if (loginOverlay) loginOverlay.style.display = 'none';
         document.body.classList.remove('login-locked');
-        console.log("Đăng nhập thành công:", user.email);
+        console.log("Đã đăng nhập thành công:", user.email);
+
+        // Lắng nghe Realtime Tên hiển thị & Avatar từ Firestore "users"
+        onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+            const userNameElem = document.getElementById('user-name');
+            const myAvatarImg = document.getElementById('my-avatar-img');
+            const inputDisplayName = document.getElementById('input-display-name');
+
+            if (docSnap.exists() && docSnap.data().displayName) {
+                currentUserName = docSnap.data().displayName;
+            } else {
+                currentUserName = user.email ? user.email.split('@')[0] : "Thành viên";
+            }
+
+            // Gán tên lên góc chào Header
+            if (userNameElem) userNameElem.innerText = currentUserName;
+
+            // Điền sẵn tên vào ô nhập trong Popup nếu đang rỗng
+            if (inputDisplayName && !inputDisplayName.value) {
+                inputDisplayName.value = currentUserName;
+            }
+
+            // Cập nhật Avatar
+            if (docSnap.exists() && docSnap.data().avatarUrl && myAvatarImg) {
+                myAvatarImg.src = docSnap.data().avatarUrl;
+            }
+        });
+
     } else {
-        //Chưa đăng nhập thành công -> Hiện form
-        if (loginOverlay) loginOverlay.style.display ='flex';
+        // Chưa đăng nhập -> Hiện form & Khóa cuộn trang
+        if (loginOverlay) loginOverlay.style.display = 'flex';
         document.body.classList.add('login-locked');
     }    
 });
 
-//Xử lý sự kiện khi bấm nút Đăng nhập
+// Xử lý sự kiện bấm nút Đăng nhập
+function setupLoginEvent() {
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
-        btnLogin.addEventListener('click', async () => {
+        btnLogin.addEventListener('click', async (e) => {
+            if (e) e.preventDefault(); // Chặn reload trang ngầm
+
             const emailInput = document.getElementById('login-email');
             const passInput = document.getElementById('login-pass');
             const errorMsg = document.getElementById('login-error-msg');
 
-            const email = emailInput ? emailInput.value.trim():'';
-            const pass = passInput ? passInput.value.trim():'';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const pass = passInput ? passInput.value.trim() : '';
 
             if (!email || !pass) {
-                errorMsg.innerText = "Vui lòng đăng nhập";
+                const emptyMsg = "Vui lòng nhập đầy đủ Email và Mật khẩu!";
+                if (errorMsg) errorMsg.innerText = emptyMsg;
+                else showToast(emptyMsg, "⚠️");
                 return;
             }
+
             btnLogin.innerText = "Đang kiểm tra...";
             btnLogin.disabled = true;
             if (errorMsg) errorMsg.innerText = "";
@@ -68,13 +179,22 @@ onAuthStateChanged(auth, (user) => {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
-                errorMsg.innerText = "Tài khoản/mật khẩu không chính xác";
+                let msg = "Tài khoản hoặc mật khẩu không chính xác!";
+                if (error.code === 'auth/operation-not-allowed') {
+                    msg = "Chưa BẬT Email/Password trong Firebase Console!";
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    msg = "Tên miền chưa được cấp phép trong Firebase Auth!";
+                }
+                
+                if (errorMsg) errorMsg.innerText = msg;
+                else showToast(msg, "❌");
             } finally {
                 btnLogin.innerText = "Đăng nhập";
                 btnLogin.disabled = false;
             }
         });
     }
+}
 
 // ==========================================
 // 1. ĐỒNG HỒ & MÚI GIỜ
@@ -252,7 +372,7 @@ function setupCreatePostEvents() {
             const content = textInputScreen ? textInputScreen.value.trim() : '';
 
             if (!content && !selectedPostFile) {
-                alert('Phương ơi, hãy gõ nội dung hoặc chọn một tấm ảnh/video nhé!');
+                showToast("Hãy gõ nội dung hoặc chọn một tấm ảnh/video nhé!", "📝");
                 return;
             }
 
@@ -265,13 +385,12 @@ function setupCreatePostEvents() {
 
                 if (selectedPostFile) {
                     isVideo = selectedPostFile.type.startsWith('video/');
-                    // Tải file lên Cloudinary
                     mediaUrl = await uploadToCloudinary(selectedPostFile);
                 }
 
                 // Lưu vào Firestore collection "posts_test"
                 await addDoc(collection(db, "posts_test"), {
-                    author: "Ouji",
+                    author: getAuthorName(),
                     location: "Việt Nam 🇻🇳",
                     content: content,
                     mediaUrl: mediaUrl,
@@ -279,11 +398,14 @@ function setupCreatePostEvents() {
                     createdAt: serverTimestamp()
                 });
 
-                alert("Đã đăng khoảnh khắc thành công! ✨");
+                // Hiện Toast thông báo cá nhân hóa
+                const toastInfo = getCustomToastInfo();
+                showToast(toastInfo.msg, toastInfo.icon);
+
                 closeCreatePostScreen();
             } catch (error) {
                 console.error("Lỗi khi đăng bài:", error);
-                alert("Đăng bài thất bại: " + error.message);
+                showToast("Đăng bài thất bại: " + error.message, "❌");
             } finally {
                 btnSubmitScreenPost.innerText = "Đăng";
                 btnSubmitScreenPost.disabled = false;
@@ -293,7 +415,7 @@ function setupCreatePostEvents() {
 }
 
 // ==========================================
-// 4. POPUP CẢM XÚC TRÊN AVATAR
+// 4. POPUP CẢM XÚC, TÊN HIỂN THỊ & ĐỔI MẬT KHẨU
 // ==========================================
 
 function setupStatusModalEvents() {
@@ -328,25 +450,43 @@ function setupStatusModalEvents() {
     if (btnSaveStatus) {
         btnSaveStatus.addEventListener('click', async () => {
             const newStatus = inputUserStatus ? inputUserStatus.value.trim() : '';
-            if (newStatus) {
-                btnSaveStatus.innerText = "Lưu...";
-                btnSaveStatus.disabled = true;
+            const newNameInput = document.getElementById('input-display-name');
+            const newName = newNameInput ? newNameInput.value.trim() : '';
+            const currentUser = auth.currentUser;
 
-                try {
-                    await setDoc(doc(db, "user_status", CURRENT_USER_ID), {
+            if (!currentUser) return;
+
+            btnSaveStatus.innerText = "Lưu...";
+            btnSaveStatus.disabled = true;
+
+            try {
+                // 1. Lưu Tên hiển thị mới vào Firestore
+                if (newName) {
+                    await setDoc(doc(db, "users", currentUser.uid), {
+                        displayName: newName,
+                        email: currentUser.email,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    currentUserName = newName;
+                }
+
+                // 2. Lưu Cảm xúc
+                if (newStatus) {
+                    await setDoc(doc(db, "user_status_test", CURRENT_USER_ID), {
                         status: newStatus,
                         updatedAt: serverTimestamp()
                     });
-
-                    if (statusModal) statusModal.classList.remove('active');
-                    if (inputUserStatus) inputUserStatus.value = '';
-                } catch (error) {
-                    console.error("Lỗi lưu cảm xúc:", error);
-                    alert("Không lưu được cảm xúc: " + error.message);
-                } finally {
-                    btnSaveStatus.innerText = "Cập nhật";
-                    btnSaveStatus.disabled = false;
                 }
+
+                showToast("Đã cập nhật thông tin thành công!", "✨");
+                if (statusModal) statusModal.classList.remove('active');
+
+            } catch (error) {
+                console.error("Lỗi cập nhật thông tin:", error);
+                showToast("Không thể cập nhật: " + error.message, "❌");
+            } finally {
+                btnSaveStatus.innerText = "Cập nhật";
+                btnSaveStatus.disabled = false;
             }
         });
     }
@@ -357,6 +497,138 @@ function setupStatusModalEvents() {
             myStatusBubble.style.display = 'block';
         }
     });
+}
+
+// Xử lý đổi Avatar
+function setupAvatarEvents() {
+    const btnChangeAvatar = document.getElementById('btn-trigger-change-avatar');
+    const avatarFileInput = document.getElementById('avatar-file-input');
+
+    if (btnChangeAvatar && avatarFileInput) {
+        btnChangeAvatar.addEventListener('click', () => {
+            avatarFileInput.click();
+        });
+    }
+
+    if (avatarFileInput) {
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                showToast("Vui lòng đăng nhập trước khi đổi avatar!", "⚠️");
+                return;
+            }
+
+            try {
+                if (btnChangeAvatar) btnChangeAvatar.innerText = "Đang tải ảnh lên...";
+
+                const avatarUrl = await uploadToCloudinary(file);
+
+                // Lưu vào Firestore collection "users"
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    avatarUrl: avatarUrl,
+                    email: currentUser.email,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                showToast("Đã cập nhật ảnh đại diện mới thành công! ✨", "📷");
+
+                const statusModal = document.getElementById('status-modal');
+                if (statusModal) statusModal.classList.remove('active');
+
+            } catch (error) {
+                console.error("Lỗi đổi avatar:", error);
+                showToast("Không thể đổi avatar: " + error.message, "❌");
+            } finally {
+                if (btnChangeAvatar) btnChangeAvatar.innerText = "📷 Chọn ảnh đại diện mới";
+                avatarFileInput.value = '';
+            }
+        });
+    }
+}
+
+// Xử lý Đổi Mật Khẩu
+function setupChangePasswordEvents() {
+    const modal = document.getElementById('change-pass-modal');
+    const btnClose = document.getElementById('btn-close-pass-modal');
+    const btnSave = document.getElementById('btn-save-new-pass');
+    const msg = document.getElementById('change-pass-msg');
+
+    window.openChangePasswordModal = function() {
+        if (modal) modal.classList.add('active');
+    };
+
+    if (btnClose) {
+        btnClose.addEventListener('click', () => {
+            if (modal) modal.classList.remove('active');
+            clearInputs();
+        });
+    }
+
+    function clearInputs() {
+        if (document.getElementById('input-old-pass')) document.getElementById('input-old-pass').value = '';
+        if (document.getElementById('input-new-pass')) document.getElementById('input-new-pass').value = '';
+        if (document.getElementById('input-confirm-pass')) document.getElementById('input-confirm-pass').value = '';
+        if (msg) msg.innerText = '';
+    }
+
+    if (btnSave) {
+        btnSave.addEventListener('click', async () => {
+            const oldPass = document.getElementById('input-old-pass').value.trim();
+            const newPass = document.getElementById('input-new-pass').value.trim();
+            const confirmPass = document.getElementById('input-confirm-pass').value.trim();
+            const user = auth.currentUser;
+
+            if (!oldPass || !newPass || !confirmPass) {
+                msg.style.color = '#FF5A5A';
+                msg.innerText = 'Vui lòng nhập đầy đủ thông tin!';
+                return;
+            }
+
+            if (newPass.length < 6) {
+                msg.style.color = '#FF5A5A';
+                msg.innerText = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                msg.style.color = '#FF5A5A';
+                msg.innerText = 'Mật khẩu xác nhận không khớp!';
+                return;
+            }
+
+            btnSave.innerText = 'Đang đổi...';
+            btnSave.disabled = true;
+
+            try {
+                const credential = EmailAuthProvider.credential(user.email, oldPass);
+                await reauthenticateWithCredential(user, credential);
+                await updatePassword(user, newPass);
+
+                msg.style.color = '#4CAF50';
+                msg.innerText = 'Đổi mật khẩu thành công! 🎉';
+
+                setTimeout(() => {
+                    if (modal) modal.classList.remove('active');
+                    clearInputs();
+                }, 1500);
+
+            } catch (error) {
+                console.error("Lỗi đổi mật khẩu:", error);
+                msg.style.color = '#FF5A5A';
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    msg.innerText = 'Mật khẩu hiện tại không đúng!';
+                } else {
+                    msg.innerText = 'Đổi thất bại: ' + error.message;
+                }
+            } finally {
+                btnSave.innerText = 'Lưu mật khẩu';
+                btnSave.disabled = false;
+            }
+        });
+    }
 }
 
 // ==========================================
@@ -434,16 +706,18 @@ function listenToMomentsRealtime() {
 
         momentsList.innerHTML = '';
 
+        // 1. Vẽ tất cả ảnh khoảnh khắc đã đăng ra trước (bên trái)
         snapshot.forEach(doc => {
             const data = doc.data();
             if (data.imageUrl) {
                 const item = document.createElement('div');
                 item.className = 'moment-item';
-                item.innerHTML = `<img src="${data.imageUrl}" alt="Khoảnh khắc" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
+                item.innerHTML = `<img src="${data.imageUrl}" alt="Khoảnh khắc">`;
                 momentsList.appendChild(item);
             }            
         });
 
+        // 2. Vẽ DUY NHẤT 1 nút "+ Thêm ảnh" ở cuối (bên phải)
         const addBtn = document.createElement('div');
         addBtn.className = 'moment-add-card';
         addBtn.onclick = () => document.getElementById('moment-file-input').click();
@@ -464,19 +738,21 @@ function setupMomentUploadListener() {
             const file = e.target.files[0];
             if (!file) return;
             try {
-                // Tải ảnh khoảnh khắc lên Cloudinary
                 const imageUrl = await uploadToCloudinary(file);
                 
-                // Lưu link vào Firestore collection "moments_test"
                 await addDoc(collection(db, "moments_test"), {
                     imageUrl: imageUrl,
                     createdAt: serverTimestamp()
                 });
-                alert('Đã thêm 1 tấm ảnh vào Khoảnh khắc chung! ✨');
+
+                // Hiện Toast thông báo cá nhân hóa
+                const toastInfo = getCustomToastInfo();
+                showToast(toastInfo.msg, toastInfo.icon);
+
                 e.target.value = '';
             } catch (error) {
                 console.error("Lỗi thêm khoảnh khắc:", error);
-                alert("Không thêm được ảnh: " + error.message);
+                showToast("Không thêm được ảnh: " + error.message, "❌");
             }
         });
     }
@@ -499,8 +775,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     updateProgressBar();
 
+    setupLoginEvent();
     setupCreatePostEvents();
     setupStatusModalEvents();
+    setupAvatarEvents();
+    setupChangePasswordEvents();
     setupNavigation();
 
     setupMomentUploadListener();
