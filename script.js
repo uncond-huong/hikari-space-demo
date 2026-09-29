@@ -19,9 +19,8 @@ import {
 const CLOUD_NAME = "zwyvvrql"; 
 const UPLOAD_PRESET = "hikari-preset"; // Ví dụ: ml_default hoặc hikari_preset
 
-const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
-
 async function uploadToCloudinary(file) {
+    const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
