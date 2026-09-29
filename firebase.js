@@ -1,7 +1,7 @@
 // Nhập các hàm cần thiết từ Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getFirestore, collection, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 // Database
 const firebaseConfig = {
@@ -19,4 +19,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
 
-export { db, storage, collection, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy, ref, uploadBytes, getDownloadURL };
+export { db, storage, collection, addDoc, doc, setDoc, onSnapshot, serverTimestamp, query, orderBy };
