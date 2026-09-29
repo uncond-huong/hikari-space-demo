@@ -16,8 +16,8 @@ import {
 // ==========================================
 // THÔNG TIN CLOUDINARY (THAY CHO FIREBASE STORAGE)
 // ==========================================
-const CLOUD_NAME = "zwyvvrql"; 
-const UPLOAD_PRESET = "upload-preset"; // Ví dụ: ml_default hoặc hikari_preset
+const CLOUD_NAME = "zwyvvrqi"; 
+const UPLOAD_PRESET = "hikari-preset"; // Ví dụ: ml_default hoặc hikari_preset
 
 async function uploadToCloudinary(file) {
     const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
